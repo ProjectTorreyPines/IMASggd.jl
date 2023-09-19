@@ -5,10 +5,14 @@ import StaticArrays: SVector
 import Statistics: mean
 import OMAS
 import SOLPS2IMAS: get_subset_space
+using RecipesBase
 
 export interp
 export get_kdtree
 export project_prop_on_subset!
+
+
+include("recipes.jl")
 
 
 function get_kdtree(space::OMAS.edge_profiles__grid_ggd___space)
