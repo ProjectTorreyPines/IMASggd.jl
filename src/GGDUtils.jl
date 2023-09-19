@@ -98,7 +98,7 @@ to_subset_ele_obj_inds: Indices of the elements of to_subset where property valu
 to_prop.values: The projected values of the properties added to prop object in a new instance
 """
 function project_prop_on_subset!(prop, from_subset::OMAS.edge_profiles__grid_ggd___grid_subset,
-                                 to_subset::OMAS.edge_profiles__grid_ggd___grid_subset;
+                                 to_subset::OMAS.edge_profiles__grid_ggd___grid_subset,
                                  space::OMAS.edge_profiles__grid_ggd___space)
     if from_subset.element[1].object[1].dimension == to_subset.element[1].object[1].dimension
         return project_prop_on_subset!(prop, from_subset, to_subset)
