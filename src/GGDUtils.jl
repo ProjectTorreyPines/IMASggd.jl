@@ -4,8 +4,9 @@ import NearestNeighbors: KDTree, knn
 import StaticArrays: SVector
 import Statistics: mean
 import OMAS
-import SOLPS2IMAS: get_subset_space
+import SOLPS2IMAS: get_subset_space, get_grid_subset_with_index
 using RecipesBase
+import ColorSchemes
 
 export interp
 export get_kdtree
