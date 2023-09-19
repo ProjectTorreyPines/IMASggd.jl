@@ -146,6 +146,7 @@ end
                 seriestype := :shape
                 linecolor := get_color(prop_value)
                 fillcolor := get_color(prop_value)
+                label := ""
                 [Tuple(nodes[cell.nodes[ii]].geometry) for ii in [1, 2, 4, 3]]
             end
         end
