@@ -31,7 +31,7 @@ end
 
 @recipe function f(
     space::OMAS.edge_profiles__grid_ggd___space,
-    subset::OMAS.edge_profiles__grid_ggd___grid_subset
+    subset::OMAS.edge_profiles__grid_ggd___grid_subset,
 )
     nodes = space.objects_per_dimension[1].object
     edges = space.objects_per_dimension[2].object
@@ -69,7 +69,7 @@ end
                 end
                 (
                     [nodes[ele.object[1].index].geometry[1]],
-                    [nodes[ele.object[1].index].geometry[2]]
+                    [nodes[ele.object[1].index].geometry[2]],
                 )
             end
         end
@@ -159,7 +159,7 @@ end
 
 @recipe function f(
     grid_ggd_arr::Vector{OMAS.edge_profiles__grid_ggd},
-    prop::OMAS.IDSvectorElement
+    prop::OMAS.IDSvectorElement,
 )
     found = false
     for grid_ggd ∈ grid_ggd_arr
@@ -172,7 +172,7 @@ end
     end
     if !found
         error("Provided property belongs to a grid_index tha is not present in ",
-            "provided grid_ggd array"
+            "provided grid_ggd array",
         )
     end
 end

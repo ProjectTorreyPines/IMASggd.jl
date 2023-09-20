@@ -49,7 +49,7 @@ function test_interp()
         Tuple(
             mean([
                 space.objects_per_dimension[1].object[node].geometry for node ∈ nodes
-            ])
+            ]),
         ) for nodes ∈ chosen_nodes
     ]
     searched_val = get_ion_density(cell_centers)

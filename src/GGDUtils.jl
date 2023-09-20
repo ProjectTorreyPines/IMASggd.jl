@@ -193,7 +193,7 @@ function project_prop_on_subset!(prop,
             return to_subset_ele_obj_inds, to_prop.values
         else
             error("to_subset does not lie entirely inside from_subset. Projection ",
-                "not possible."
+                "not possible.",
             )
         end
     else
