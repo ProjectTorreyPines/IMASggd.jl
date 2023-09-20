@@ -28,7 +28,6 @@
     end
 end
 
-
 @recipe function f(
     space::OMAS.edge_profiles__grid_ggd___space,
     subset::OMAS.edge_profiles__grid_ggd___grid_subset,
@@ -94,7 +93,6 @@ end
     end
 end
 
-
 @recipe function f(grid_ggd::OMAS.edge_profiles__grid_ggd, prop::OMAS.IDSvectorElement)
     subset = get_grid_subset_with_index(grid_ggd, prop.grid_subset_index)
     space = grid_ggd.space[subset.element[1].object[1].space]
@@ -155,7 +153,6 @@ end
         end
     end
 end
-
 
 @recipe function f(
     grid_ggd_arr::Vector{OMAS.edge_profiles__grid_ggd},

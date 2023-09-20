@@ -12,9 +12,7 @@ export interp
 export get_kdtree
 export project_prop_on_subset!
 
-
 include("recipes.jl")
-
 
 function get_kdtree(space::OMAS.edge_profiles__grid_ggd___space)
     grid_nodes = space.objects_per_dimension[1].object
@@ -26,7 +24,6 @@ function get_kdtree(space::OMAS.edge_profiles__grid_ggd___space)
     ]
     return KDTree(grid_centers; leafsize=10)
 end
-
 
 function interp(prop, kdtree::KDTree)
     function get_interp_val(x::Number, y::Number)
@@ -56,11 +53,9 @@ function interp(prop, kdtree::KDTree)
     return get_interp_val
 end
 
-
 function interp(prop, space::OMAS.edge_profiles__grid_ggd___space)
     return interp(prop, get_kdtree(space))
 end
-
 
 """
     get_subset_centers(space::OMAS.edge_profiles__grid_ggd___space,
@@ -78,7 +73,6 @@ function get_subset_centers(space::OMAS.edge_profiles__grid_ggd___space,
         obj ∈ subset_space
     ]
 end
-
 
 #! format: off
 """
@@ -153,7 +147,6 @@ function project_prop_on_subset!(prop,
         println("to_subset is higher dimensional than from_subset")
     end
 end
-
 
 function project_prop_on_subset!(prop,
     from_subset::OMAS.edge_profiles__grid_ggd___grid_subset,

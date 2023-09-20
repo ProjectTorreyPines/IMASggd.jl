@@ -56,7 +56,6 @@ function test_interp()
     return true
 end
 
-
 function test_project_prop_on_subset()
     b2gmtry = "$(@__DIR__)/../samples/b2fgmtry"
     b2output = "$(@__DIR__)/../samples/b2time_red.nc"
