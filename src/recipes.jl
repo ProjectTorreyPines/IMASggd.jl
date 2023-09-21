@@ -8,7 +8,7 @@
     xaxis --> "R / m"
     yaxis --> "Z / m"
     label_assigned = false
-    for edge in edges
+    for edge ∈ edges
         if 0 ∉ edge.nodes
             @series begin
                 seriestype := :path
@@ -22,12 +22,11 @@
                 else
                     label := ""
                 end
-                [Tuple(nodes[edge.nodes[ii]].geometry) for ii in [1, 2]]
+                [Tuple(nodes[edge.nodes[ii]].geometry) for ii ∈ [1, 2]]
             end
         end
     end
 end
-
 
 @recipe function f(
     space::OMAS.edge_profiles__grid_ggd___space,
@@ -45,15 +44,15 @@ end
     subset_edge_inds = []
     label_assigned = false
     if subset.element[1].object[1].dimension == 2
-        for ele in subset.element
-            for bnd_ind in cells[ele.object[1].index].boundary
+        for ele ∈ subset.element
+            for bnd_ind ∈ cells[ele.object[1].index].boundary
                 union!(subset_edge_inds, bnd_ind)
             end
         end
     elseif subset.element[1].object[1].dimension == 1
-        subset_edge_inds = [ele.object[1].index for ele in subset.element]
+        subset_edge_inds = [ele.object[1].index for ele ∈ subset.element]
     elseif subset.element[1].object[1].dimension == 0
-        for ele in subset.element
+        for ele ∈ subset.element
             @series begin
                 seriestype := :scatter
                 marker --> (:circle, 5)
@@ -67,11 +66,14 @@ end
                 else
                     label := ""
                 end
-                ([nodes[ele.object[1].index].geometry[1]], [nodes[ele.object[1].index].geometry[2]])
+                (
+                    [nodes[ele.object[1].index].geometry[1]],
+                    [nodes[ele.object[1].index].geometry[2]],
+                )
             end
         end
     end
-    for edge in edges[subset_edge_inds]
+    for edge ∈ edges[subset_edge_inds]
         if 0 ∉ edge.nodes
             @series begin
                 seriestype := :path
@@ -85,12 +87,11 @@ end
                 else
                     label := ""
                 end
-                [Tuple(nodes[edge.nodes[ii]].geometry) for ii in [1, 2]]
+                [Tuple(nodes[edge.nodes[ii]].geometry) for ii ∈ [1, 2]]
             end
         end
     end
 end
-
 
 @recipe function f(grid_ggd::OMAS.edge_profiles__grid_ggd, prop::OMAS.IDSvectorElement)
     subset = get_grid_subset_with_index(grid_ggd, prop.grid_subset_index)
@@ -113,7 +114,7 @@ end
         val_min = minimum(prop.values)
         val_max = maximum(prop.values)
         function get_color(prop_value)
-            return color_grad[(log10(prop_value / val_min) / log10(val_max / val_min))]
+            return color_grad[(log10(prop_value / val_min)/log10(val_max / val_min))]
         end
 
         if :colorbar_title in keys(plotattributes)
@@ -137,9 +138,9 @@ end
             rand(2, 2)
         end
 
-        # Actual plot is plotted as different cell shapes filled with color values based on
-        # property value
-        for (ele, prop_value) in zip(subset.element, prop.values)
+        # Actual plot is plotted as different cell shapes filled with color values
+        # based on property value
+        for (ele, prop_value) ∈ zip(subset.element, prop.values)
             cell = cells[ele.object[1].index]
             @series begin
                 subplot := 1
@@ -147,16 +148,18 @@ end
                 linecolor := get_color(prop_value)
                 fillcolor := get_color(prop_value)
                 label := ""
-                [Tuple(nodes[cell.nodes[ii]].geometry) for ii in [1, 2, 4, 3]]
+                [Tuple(nodes[cell.nodes[ii]].geometry) for ii ∈ [1, 2, 4, 3]]
             end
         end
     end
 end
 
-
-@recipe function f(grid_ggd_arr::Vector{OMAS.edge_profiles__grid_ggd}, prop::OMAS.IDSvectorElement)
+@recipe function f(
+    grid_ggd_arr::Vector{OMAS.edge_profiles__grid_ggd},
+    prop::OMAS.IDSvectorElement,
+)
     found = false
-    for grid_ggd in grid_ggd_arr
+    for grid_ggd ∈ grid_ggd_arr
         if grid_ggd.identifier.index == prop.grid_index
             @series begin
                 return grid_ggd, prop
@@ -165,6 +168,8 @@ end
         end
     end
     if !found
-        error("Provided property belongs to a grid_index tha is not present in provided grid_ggd array")
+        error("Provided property belongs to a grid_index tha is not present in ",
+            "provided grid_ggd array",
+        )
     end
 end
