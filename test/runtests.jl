@@ -68,10 +68,8 @@ function test_project_prop_on_subset()
     from_subset = get_grid_subset_with_index(dd.edge_profiles.grid_ggd[1], 5)
     # separatix
     to_subset = get_grid_subset_with_index(dd.edge_profiles.grid_ggd[1], 16)
-    # Cheating: need to fix solps2imas, prop did not get correct grid_subset_index
-    prop[5].grid_subset_index = 5
     separatix_centers, values_at_separatix =
-        project_prop_on_subset!(prop, from_subset, to_subset; space)
+        project_prop_on_subset!(prop, from_subset, to_subset, space)
     # println("Projected to separatix:")
     # for ii ∈ eachindex(separatix_centers)
     #     println(separatix_centers[ii], ": ", values_at_separatix[ii])
