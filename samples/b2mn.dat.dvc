@@ -1,12 +1,12 @@
-md5: 604582a3258f12bb4d2711a15479e2c0
+md5: ab8eafd069e624c2e00e6156be881d4a
 frozen: true
 deps:
-- path: ITER_Lore_2296_00000/run_restart/b2mn.dat
+- path: ITER_Lore_2296_00000/run_time_dep_EIRENE_jdl_to_ss_cont_sine2_2d_output/b2mn.dat
   repo:
     url: git@github.com:ProjectTorreyPines/SOLPSTestSamples.git
     rev_lock: 35fd24298a4118eec6491dcd17d4e0ec97823e83
 outs:
-- md5: 26c5edd33fed9bff73cda8db17c591db
-  size: 1560
+- md5: 1af9d167996ea1a420f49e0d89c98e6d
+  size: 13925
   hash: md5
   path: b2mn.dat
