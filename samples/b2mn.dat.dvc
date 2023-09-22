@@ -1,10 +1,10 @@
-md5: c408a3f9242593adab848e2899868371
+md5: 604582a3258f12bb4d2711a15479e2c0
 frozen: true
 deps:
 - path: ITER_Lore_2296_00000/run_restart/b2mn.dat
   repo:
-    url: git@github.com:ProjectTorreyPines/TestSamples.git
-    rev_lock: dc2da57d329888998e008f766e620ee914541d2f
+    url: git@github.com:ProjectTorreyPines/SOLPSTestSamples.git
+    rev_lock: 35fd24298a4118eec6491dcd17d4e0ec97823e83
 outs:
 - md5: 26c5edd33fed9bff73cda8db17c591db
   size: 1560

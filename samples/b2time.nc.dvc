@@ -1,10 +1,10 @@
-md5: ca5c76dfa367c27a421168b198c3346d
+md5: 3a4769e64de6be6527579e6490d332f3
 frozen: true
 deps:
 - path: ITER_Lore_2296_00000/run_restart/b2time.nc
   repo:
-    url: git@github.com:ProjectTorreyPines/TestSamples.git
-    rev_lock: dc2da57d329888998e008f766e620ee914541d2f
+    url: git@github.com:ProjectTorreyPines/SOLPSTestSamples.git
+    rev_lock: 35fd24298a4118eec6491dcd17d4e0ec97823e83
 outs:
 - md5: 850542d59a6796eca1e22a64162af2de
   size: 201992
