@@ -197,4 +197,57 @@ function project_prop_on_subset!(prop,
     end
 end
 
+function Base.:∈(
+    point::Tuple{Float64, Float64},
+    subset_of_space::Tuple{
+        OMAS.edge_profiles__grid_ggd___grid_subset,
+        OMAS.edge_profiles__grid_ggd___space,
+    },
+)
+    r, z = point
+    subset, space = subset_of_space
+    dim = subset.element[1].object[1].dimension
+    nodes = space.objects_per_dimension[1].object
+    edges = space.objects_per_dimension[2].object
+    if dim == 2
+        subset_bnd = OMAS.edge_profiles__grid_ggd___grid_subset()
+        subset_bnd.element = SOLPS2IMAS.get_subset_boundary(space, subset)
+    elseif dim == 1
+        subset_bnd = subset
+    elseif dim == 0
+        for ele ∈ subset.element
+            node = nodes[ele.object[1].index]
+            if node.geometry[1] == r && node.geometry[2] == z
+                return true
+            end
+        end
+        return false
+    else
+        error("Dimension ", dim, " is not supported yet.")
+    end
+    count = 0
+    for ele ∈ subset_bnd.element
+        edge = edges[ele.object[1].index]
+        edge_z_at_r = line_between([nodes[node].geometry for node ∈ edge.nodes]...)(r)
+        edge_ends =
+            mapreduce(permutedims, vcat, [nodes[node].geometry for node ∈ edge.nodes])
+        if maximum(edge_ends[:, 1]) >= r >= minimum(edge_ends[:, 1])
+            if z < edge_z_at_r
+                count += 1
+            end
+        end
+    end
+    if count % 2 == 1
+        return true
+    else
+        return false
+    end
+end
+
+function line_between(fp::Vector{Float64}, sp::Vector{Float64})
+    slope = (sp[2] - fp[2]) / (sp[1] - fp[1])
+    intercept = fp[2] - slope * fp[1]
+    return (x::Float64) -> slope * x + intercept
+end
+
 end # module GGDUtils
