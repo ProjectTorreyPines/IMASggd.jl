@@ -11,6 +11,8 @@ using ColorSchemes: ColorSchemes
 export interp
 export get_kdtree
 export project_prop_on_subset!
+export get_subset_centers
+export get_prop_with_grid_subset_index
 
 include("recipes.jl")
 
@@ -150,14 +152,9 @@ end
 
 function project_prop_on_subset!(prop,
     from_subset::OMAS.edge_profiles__grid_ggd___grid_subset,
-    to_subset::OMAS.edge_profiles__grid_ggd___grid_subset)
-    from_prop = nothing
-    for p ∈ prop
-        if p.grid_subset_index == from_subset.identifier.index
-            from_prop = p
-            break
-        end
-    end
+    to_subset::OMAS.edge_profiles__grid_ggd___grid_subset,
+)
+    from_prop = get_prop_with_grid_subset_index(prop, from_subset.identifier.index)
     if isnothing(from_prop)
         println("from_subset not represented in the property yet")
     end
@@ -197,4 +194,65 @@ function project_prop_on_subset!(prop,
     end
 end
 
+function Base.:∈(
+    point::Tuple{Float64, Float64},
+    subset_of_space::Tuple{
+        OMAS.edge_profiles__grid_ggd___grid_subset,
+        OMAS.edge_profiles__grid_ggd___space,
+    },
+)
+    r, z = point
+    subset, space = subset_of_space
+    dim = subset.element[1].object[1].dimension
+    nodes = space.objects_per_dimension[1].object
+    edges = space.objects_per_dimension[2].object
+    if dim == 2
+        subset_bnd = OMAS.edge_profiles__grid_ggd___grid_subset()
+        subset_bnd.element = SOLPS2IMAS.get_subset_boundary(space, subset)
+    elseif dim == 1
+        subset_bnd = subset
+    elseif dim == 0
+        for ele ∈ subset.element
+            node = nodes[ele.object[1].index]
+            if node.geometry[1] == r && node.geometry[2] == z
+                return true
+            end
+        end
+        return false
+    else
+        error("Dimension ", dim, " is not supported yet.")
+    end
+    count = 0
+    for ele ∈ subset_bnd.element
+        edge = edges[ele.object[1].index]
+        edge_z_at_r = line_between([nodes[node].geometry for node ∈ edge.nodes]...)(r)
+        edge_ends =
+            mapreduce(permutedims, vcat, [nodes[node].geometry for node ∈ edge.nodes])
+        if maximum(edge_ends[:, 1]) >= r >= minimum(edge_ends[:, 1])
+            if z < edge_z_at_r
+                count += 1
+            end
+        end
+    end
+    if count % 2 == 1
+        return true
+    else
+        return false
+    end
+end
+
+function line_between(fp::Vector{Float64}, sp::Vector{Float64})
+    slope = (sp[2] - fp[2]) / (sp[1] - fp[1])
+    intercept = fp[2] - slope * fp[1]
+    return (x::Float64) -> slope * x + intercept
+end
+
+function get_prop_with_grid_subset_index(prop, grid_subset_index::Int64)
+    for p ∈ prop
+        if p.grid_subset_index == grid_subset_index
+            return p
+        end
+    end
+    return nothing
+end
 end # module GGDUtils
