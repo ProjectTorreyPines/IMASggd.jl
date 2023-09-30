@@ -11,6 +11,8 @@ using ColorSchemes: ColorSchemes
 export interp
 export get_kdtree
 export project_prop_on_subset!
+export get_subset_centers
+export get_prop_with_grid_subset_index
 
 include("recipes.jl")
 
@@ -150,14 +152,9 @@ end
 
 function project_prop_on_subset!(prop,
     from_subset::OMAS.edge_profiles__grid_ggd___grid_subset,
-    to_subset::OMAS.edge_profiles__grid_ggd___grid_subset)
-    from_prop = nothing
-    for p ∈ prop
-        if p.grid_subset_index == from_subset.identifier.index
-            from_prop = p
-            break
-        end
-    end
+    to_subset::OMAS.edge_profiles__grid_ggd___grid_subset,
+)
+    from_prop = get_prop_with_grid_subset_index(prop, from_subset.identifier.index)
     if isnothing(from_prop)
         println("from_subset not represented in the property yet")
     end
@@ -250,4 +247,12 @@ function line_between(fp::Vector{Float64}, sp::Vector{Float64})
     return (x::Float64) -> slope * x + intercept
 end
 
+function get_prop_with_grid_subset_index(prop, grid_subset_index::Int64)
+    for p ∈ prop
+        if p.grid_subset_index == grid_subset_index
+            return p
+        end
+    end
+    return nothing
+end
 end # module GGDUtils
