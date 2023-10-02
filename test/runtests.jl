@@ -94,3 +94,23 @@ end
     @test test_interp()
     @test test_project_prop_on_subset()
 end
+
+@testset "test ∈" begin
+    b2gmtry = "$(@__DIR__)/../samples/b2fgmtry"
+    b2output = "$(@__DIR__)/../samples/b2time.nc"
+    gsdesc = "$(@__DIR__)/../samples/gridspacedesc.yml"
+    b2mn = "$(@__DIR__)/../samples/b2mn.dat"
+    dd = solps2imas(b2gmtry, b2output, gsdesc, b2mn)
+    grid_ggd = dd.edge_profiles.grid_ggd[1]
+    space = grid_ggd.space[1]
+    subset_corebnd = get_grid_subset_with_index(grid_ggd, 15)
+    subset_sol = get_grid_subset_with_index(grid_ggd, 23)
+    subset_odr = get_grid_subset_with_index(grid_ggd, 24)
+
+    @test (6.0, 0.0) ∈ (subset_corebnd, space)
+    @test (5.0, -2.5) ∉ (subset_corebnd, space)
+    @test (6.0, 4.0) ∈ (subset_sol, space)
+    @test (6.0, 3.0) ∉ (subset_sol, space)
+    @test (5.1, -3.7) ∈ (subset_odr, space)
+    @test (4.5, -3.7) ∉ (subset_odr, space)
+end
