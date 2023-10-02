@@ -4,7 +4,7 @@ import NearestNeighbors: KDTree, knn
 import StaticArrays: SVector
 import Statistics: mean
 using OMAS: OMAS
-import SOLPS2IMAS: get_subset_space, get_grid_subset_with_index
+import SOLPS2IMAS: get_subset_space, get_grid_subset_with_index, get_subset_boundary
 using RecipesBase
 using ColorSchemes: ColorSchemes
 
@@ -194,6 +194,24 @@ function project_prop_on_subset!(prop,
     end
 end
 
+"""
+    Base.:∈(
+    point::Tuple{Float64, Float64},
+    subset_of_space::Tuple{
+        OMAS.edge_profiles__grid_ggd___grid_subset,
+        OMAS.edge_profiles__grid_ggd___space,
+    },
+
+)
+
+Overloading ∈ operator to check if a point is inside a subset of space.
+
+If the subset is 0-dimensional, all points are searched. If the subset is 1-dimensional,
+it is checked if the point is within the enclosed area. It is assumed that a
+1-dimensional subset used in such a context will form a closed area. If the subset is
+2-dimensional, its boundary is calculated on the fly. If used multiple times, it is
+recommended to calculate the boundary once and store it in a variable.
+"""
 function Base.:∈(
     point::Tuple{Float64, Float64},
     subset_of_space::Tuple{
@@ -208,7 +226,7 @@ function Base.:∈(
     edges = space.objects_per_dimension[2].object
     if dim == 2
         subset_bnd = OMAS.edge_profiles__grid_ggd___grid_subset()
-        subset_bnd.element = SOLPS2IMAS.get_subset_boundary(space, subset)
+        subset_bnd.element = get_subset_boundary(space, subset)
     elseif dim == 1
         subset_bnd = subset
     elseif dim == 0
@@ -222,29 +240,25 @@ function Base.:∈(
     else
         error("Dimension ", dim, " is not supported yet.")
     end
+    # Count number of times an upward going ray from (r,z) intersects the boundary
     count = 0
     for ele ∈ subset_bnd.element
         edge = edges[ele.object[1].index]
-        edge_z_at_r = line_between([nodes[node].geometry for node ∈ edge.nodes]...)(r)
-        edge_ends =
-            mapreduce(permutedims, vcat, [nodes[node].geometry for node ∈ edge.nodes])
-        if maximum(edge_ends[:, 1]) >= r >= minimum(edge_ends[:, 1])
-            if z < edge_z_at_r
+        r_max = maximum([nodes[node].geometry[1] for node ∈ edge.nodes])
+        r_min = minimum([nodes[node].geometry[1] for node ∈ edge.nodes])
+        if r_min <= r < r_max
+            z_max = maximum([nodes[node].geometry[2] for node ∈ edge.nodes])
+            if z < z_max
                 count += 1
             end
         end
     end
+    # If it is even, the point is outside the boundary
     if count % 2 == 1
         return true
     else
         return false
     end
-end
-
-function line_between(fp::Vector{Float64}, sp::Vector{Float64})
-    slope = (sp[2] - fp[2]) / (sp[1] - fp[1])
-    intercept = fp[2] - slope * fp[1]
-    return (x::Float64) -> slope * x + intercept
 end
 
 function get_prop_with_grid_subset_index(prop, grid_subset_index::Int64)
