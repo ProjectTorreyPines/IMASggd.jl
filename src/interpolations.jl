@@ -1,6 +1,7 @@
 import NearestNeighbors: KDTree, knn
 import StaticArrays: SVector
 import Statistics: mean
+import Interpolations: linear_interpolation
 
 function get_kdtree(space::OMAS.edge_profiles__grid_ggd___space)
     grid_nodes = space.objects_per_dimension[1].object
@@ -167,4 +168,43 @@ function interp(
     subset = get_grid_subset_with_index(grid_ggd, grid_subset_index)
     space = grid_ggd.space[subset.element[1].object[1].space]
     return interp(getfield(prop, value_field), space, subset; use_nearest_n)
+end
+
+"""
+    interp(eqt::OMAS.equilibrium__time_slice)
+
+For a given equilibrium time slice, return a function that can be used to interpolate
+from (r, z) space to rho (normalized toroidal flux coordinate)space.
+
+Example:
+rz2rho = interp(dd.equilibrium.time_slice[1])
+rho = rz2rho.([(r, z) for r in 3:0.01:9, for z in -5:0.01:5])
+"""
+function interp(eqt::OMAS.equilibrium__time_slice)
+    p1 = eqt.profiles_1d
+    p2 = eqt.profiles_2d[1]
+    gq = eqt.global_quantities
+    psi_a = gq.psi_axis
+    psi_b = gq.psi_boundary
+    rhon_eq = p1.rho_tor_norm
+    psi_eq = p1.psi
+    psin_eq = (psi_eq .- psi_a) ./ (psi_b - psi_a)
+    psirz = p2.psi
+    psinrz = (psirz .- psi_a) ./ (psi_b - psi_a)
+    r_eq = p2.grid.dim1
+    z_eq = p2.grid.dim2
+    extension = [1.0001, 1.1, 5]
+    # rho_N isn't defined on open flux surfaces, so it is extended by copying psi_N
+    psin_eq_ext = copy(psin_eq)
+    append!(psin_eq_ext, extension)
+    rhon_eq_ext = copy(rhon_eq)
+    append!(rhon_eq_ext, extension)
+    neg_extension = [-5, -0.0001]  # I guess this would be at a PF coil or something?
+    prepend!(psin_eq_ext, neg_extension)
+    prepend!(rhon_eq_ext, neg_extension)
+    rz2psin = linear_interpolation((r_eq, z_eq), psinrz)
+    psin2rhon = linear_interpolation(psin_eq_ext, rhon_eq_ext)
+    get_interp_val(r::Real, z::Real) = psin2rhon(rz2psin(r, z))
+    get_interp_val(rz::Tuple{Real, Real}) = get_interp_val(rz...)
+    return get_interp_val
 end
