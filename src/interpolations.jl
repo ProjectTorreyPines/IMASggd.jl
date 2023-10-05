@@ -170,6 +170,9 @@ function interp(
     return interp(getfield(prop, value_field), space, subset; use_nearest_n)
 end
 
+const RHO_EXT_POS = [1.0001, 1.1, 5]
+const RHO_EXT_NEG = [-5, -0.0001] # I guess this would be at a PF coil or something?
+
 """
     interp(eqt::OMAS.equilibrium__time_slice)
 
@@ -193,18 +196,104 @@ function interp(eqt::OMAS.equilibrium__time_slice)
     psinrz = (psirz .- psi_a) ./ (psi_b - psi_a)
     r_eq = p2.grid.dim1
     z_eq = p2.grid.dim2
-    extension = [1.0001, 1.1, 5]
     # rho_N isn't defined on open flux surfaces, so it is extended by copying psi_N
     psin_eq_ext = copy(psin_eq)
-    append!(psin_eq_ext, extension)
+    append!(psin_eq_ext, RHO_EXT_POS)
     rhon_eq_ext = copy(rhon_eq)
-    append!(rhon_eq_ext, extension)
-    neg_extension = [-5, -0.0001]  # I guess this would be at a PF coil or something?
-    prepend!(psin_eq_ext, neg_extension)
-    prepend!(rhon_eq_ext, neg_extension)
+    append!(rhon_eq_ext, RHO_EXT_POS)
+    prepend!(psin_eq_ext, RHO_EXT_NEG)
+    prepend!(rhon_eq_ext, RHO_EXT_NEG)
     rz2psin = linear_interpolation((r_eq, z_eq), psinrz)
     psin2rhon = linear_interpolation(psin_eq_ext, rhon_eq_ext)
     get_interp_val(r::Real, z::Real) = psin2rhon(rz2psin(r, z))
     get_interp_val(rz::Tuple{Real, Real}) = get_interp_val(rz...)
     return get_interp_val
+end
+
+"""
+    interp(
+    prop::Vector{T},
+    prof::OMAS.core_profiles__profiles_1d,
+
+) where {T <: Real}
+
+Returns an inteprolation function for the core profile property values defined on
+normalized toroidal flux coordinate rho.
+
+Example:
+core_profile_n_e = dd.core_profiles.profiles_1d[1].electrons.density
+get_n_e = interp(core_profile_n_e, dd.core_profiles.profiles_1d[1])
+get_n_e(1) # Returns electron density at rho = 1 (separatix)
+"""
+function interp(
+    prop::Vector{T},
+    prof::OMAS.core_profiles__profiles_1d,
+) where {T <: Real}
+    rho_prof = copy(prof.grid.rho_tor_norm)
+    length(prop) == length(rho_prof) ||
+        error("Property muast have same length as rho_tor_norm in core_profile")
+    prepend!(rho_prof, RHO_EXT_NEG)
+    append!(rho_prof, RHO_EXT_POS)
+    p = copy(prop)
+    prepend!(p, zeros(size(RHO_EXT_NEG)))
+    append!(p, zeros(size(RHO_EXT_POS)))
+    return linear_interpolation(rho_prof, p)
+end
+
+"""
+    interp(
+    prop::Vector{T},
+    prof::OMAS.core_profiles__profiles_1d,
+    rz2rho::Function,
+
+)
+
+Returns an inteprolation function in (R, Z) domain for the core profile property values
+defined on normalized toroidal flux coordinate rho and with a provided function to
+convert (R,Z) to rho.
+
+Example:
+
+rz2rho = interp(dd.equilibrium.time_slice[1])
+core_profile_n_e = dd.core_profiles.profiles_1d[1].electrons.density
+get_n_e = interp(core_profile_n_e, dd.core_profiles.profiles_1d[1], rz2rho)
+get_n_e(5.0, 3.5) # Returns electron density at (R, Z) = (5.0, 3.5)
+"""
+function interp(
+    prop::Vector{T},
+    prof::OMAS.core_profiles__profiles_1d,
+    rz2rho::Function,
+) where {T <: Real}
+    itp = interp(prop, prof)
+    get_interp_val(r::Real, z::Real) = itp.(rz2rho(r, z))
+    get_interp_val(rz::Tuple{Real, Real}) = get_interp_val(rz...)
+    return get_interp_val
+end
+
+"""
+    interp(
+    prop::Vector{T},
+    prof::OMAS.core_profiles__profiles_1d,
+    eqt::OMAS.equilibrium__time_slice,
+
+) where {T <: Real}
+
+Returns an inteprolation function in (R, Z) domain for the core profile property values
+defined on normalized toroidal flux coordinate rho and with a provided equilibrium time
+slice to get (R, Z) to rho conversion.
+
+Example:
+
+eqt = dd.equilibrium.time_slice[1]
+core_profile_n_e = dd.core_profiles.profiles_1d[1].electrons.density
+get_n_e = interp(core_profile_n_e, dd.core_profiles.profiles_1d[1], eqt)
+get_n_e(5.0, 3.5) # Returns electron density at (R, Z) = (5.0, 3.5)
+"""
+function interp(
+    prop::Vector{T},
+    prof::OMAS.core_profiles__profiles_1d,
+    eqt::OMAS.equilibrium__time_slice,
+) where {T <: Real}
+    rz2rho = interp(eqt)
+    return interp(prop, prof, rz2rho)
 end
