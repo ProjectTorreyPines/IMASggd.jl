@@ -26,7 +26,8 @@ end
     interp(
     prop_values::Vector{T},
     kdtree::KDTree;
-    use_nearest_n=4,
+    use_nearest_n::Int=4,
+    weighing::Function=(d) -> 1 / d,
 
 ) where {T <: Real}
 
@@ -39,11 +40,12 @@ function interp(
     prop_values::Vector{T},
     kdtree::KDTree;
     use_nearest_n::Int=4,
+    weighing::Function=(d) -> 1 / d,
 ) where {T <: Real}
     function get_interp_val(x::Real, y::Real)
         nearest_indices, distances = knn(kdtree, Array([x, y]), use_nearest_n)
         values = [prop_values[ii] for ii ∈ nearest_indices]
-        weights = 1 ./ distances
+        weights = weighing.(distances)
         if any(isinf.(weights))
             return values[distances.==0][1]
         end
@@ -54,10 +56,90 @@ function interp(
 end
 
 """
+    _G(x1::Tuple{U, U}, x2::Tuple{U, U}) where {U <: Real}
+
+Helper function for the interpolation function. It calculates the Green's function for
+minimizing bending energy of a surface.
+
+http://www.geometrictools.com/Documentation/ThinPlateSplines.pdf Eq(28)
+"""
+function _G(x1::Tuple{U, U}, x2::Tuple{U, U}) where {U <: Real}
+    r = sqrt(sum((x1 .- x2) .^ 2))
+    if r == 0
+        return 0
+    end
+    return r^2 * log(r) / 8 / π
+end
+
+"""
+    _condition_y(y::Vector{T}) where {T <: Real}
+
+Conditioning function on value vector before interpolation is performed. If the values
+range from negative to positive range, then linear condition is done in which the mean
+is subtracted and the range of the vector is used to normalize the values so they lie
+between -1 and 1. If the values all have the same sign and they vary by more than 2
+orders of magnitude, then log10 is taken after normalizing the values with their
+minimum absolute value. This is done to avoid numerical issues with interpolation.
+Return values are conditioned y and inverse conditioning function.
+"""
+function _condition_y(y::Vector{T}) where {T <: Real}
+    do_log = false
+    ylims = extrema(y)
+    if prod(ylims) > 0
+        if ylims[2] / ylims[1] > 100
+            do_log = true
+        end
+    end
+    if do_log
+        norm_by = minimum(abs.(ylims)) * sign(ylims[1])
+        return log10.(y ./ norm_by), (cy) -> (10 .^ (cy)) * norm_by
+    else
+        norm_by = ylims[2] - ylims[1]
+        mean_y = mean(y)
+        return (y .- mean_y) ./ norm_by, (cy) -> (cy .* norm_by) .+ mean_y
+    end
+end
+
+"""
+    interp(y::Vector{T}, x::Vector{Tuple{U, U}}) where {T <: Real, U <: Real}
+
+Thin plate smoothing interpolation function for a 2d space scalar function. The
+algorithm has been adopted from:
+
+http://www.geometrictools.com/Documentation/ThinPlateSplines.pdf
+
+This is an implementation of Euler-Lagrange equation for minimizing bending energy of a
+surface.
+"""
+function interp(y::Vector{T}, x::Vector{Tuple{U, U}}) where {T <: Real, U <: Real}
+    length(x) == length(y) || error("Space (r, z) and values must have the same length")
+    # Setup matrices as defined in Eq (30)
+    M = Matrix{U}(undef, length(x), length(x))
+    for ii ∈ eachindex(x)
+        for jj ∈ eachindex(x)
+            M[ii, jj] = _G(x[ii], x[jj])
+        end
+    end
+    N = Matrix{U}(undef, length(x), 3)
+    for ii ∈ eachindex(x)
+        N[ii, 1] = 1.0
+        N[ii, 2] = x[ii][1]
+        N[ii, 3] = x[ii][2]
+    end
+    cy, inv_cy = _condition_y(y)
+    # From Eq(31)
+    b = (N' * M^(-1) * N)^(-1) * N' * M^(-1) * cy
+    a = M^(-1) * (cy - N * b)
+    function get_interp_val(r::Real, z::Real)
+        return inv_cy(sum(a .* [_G((r, z), xi) for xi ∈ x]) + sum(b .* [1, r, z]))
+    end
+    return get_interp_val(gp::Tuple{V, V}) where {V <: Real} = get_interp_val(gp...)
+end
+
+"""
     interp(
     prop_values::Vector{T},
-    space::OMAS.edge_profiles__grid_ggd___space;
-    use_nearest_n::Int=4,
+    space::OMAS.edge_profiles__grid_ggd___space
 
 ) where {T <: Real}
 
@@ -67,18 +149,17 @@ of the space.
 """
 function interp(
     prop_values::Vector{T},
-    space::OMAS.edge_profiles__grid_ggd___space;
-    use_nearest_n::Int=4,
+    space::OMAS.edge_profiles__grid_ggd___space,
 ) where {T <: Real}
-    return interp(prop, get_kdtree(space); use_nearest_n)
+    nodes = [Tuple(node.geometry) for node ∈ space.objects_per_dimension[1].object]
+    return interp(prop, nodes)
 end
 
 """
     interp(
     prop_values::Vector{Real},
     space::OMAS.edge_profiles__grid_ggd___space,
-    subset::OMAS.edge_profiles__grid_ggd___grid_subset;
-    use_nearest_n::Int=4,
+    subset::OMAS.edge_profiles__grid_ggd___grid_subset
 
 )
 
@@ -88,18 +169,16 @@ it is assumed that the property values are provided for each element of the subs
 function interp(
     prop_values::Vector{T},
     space::OMAS.edge_profiles__grid_ggd___space,
-    subset::OMAS.edge_profiles__grid_ggd___grid_subset;
-    use_nearest_n::Int=4,
+    subset::OMAS.edge_profiles__grid_ggd___grid_subset,
 ) where {T <: Real}
-    return interp(prop_values, get_kdtree(space, subset); use_nearest_n)
+    return interp(prop_values, get_subset_centers(space, subset))
 end
 
 """
     interp(
     prop::edge_profiles__prop_on_subset,
     grid_ggd::OMAS.edge_profiles__grid_ggd,
-    value_field::Symbol=:values;
-    use_nearest_n::Int=4,
+    value_field::Symbol=:values
 
 )
 
@@ -111,12 +190,11 @@ get_e_field_par = interp(dd.edge_profiles.ggd[1].e_field[1], grid_ggd, :parallel
 function interp(
     prop::edge_profiles__prop_on_subset,
     grid_ggd::OMAS.edge_profiles__grid_ggd,
-    value_field::Symbol=:values;
-    use_nearest_n::Int=4,
+    value_field::Symbol=:values,
 )
     subset = get_grid_subset_with_index(grid_ggd, prop.grid_subset_index)
     space = grid_ggd.space[subset.element[1].object[1].space]
-    return interp(getfield(prop, value_field), space, subset; use_nearest_n)
+    return interp(getfield(prop, value_field), space, subset)
 end
 
 """
@@ -124,8 +202,7 @@ end
     prop_arr::Vector{T},
     space::OMAS.edge_profiles__grid_ggd___space,
     subset::OMAS.edge_profiles__grid_ggd___grid_subset,
-    value_field::Symbol=:values;
-    use_nearest_n::Int=4,
+    value_field::Symbol=:values
 
 ) where {T <: edge_profiles__prop_on_subset}
 
@@ -137,11 +214,10 @@ function interp(
     prop_arr::Vector{T},
     space::OMAS.edge_profiles__grid_ggd___space,
     subset::OMAS.edge_profiles__grid_ggd___grid_subset,
-    value_field::Symbol=:values;
-    use_nearest_n::Int=4,
+    value_field::Symbol=:values,
 ) where {T <: edge_profiles__prop_on_subset}
     prop = get_prop_with_grid_subset_index(prop_arr, subset.identifier.index)
-    return interp(getfield(prop, value_field), space, subset; use_nearest_n)
+    return interp(getfield(prop, value_field), space, subset)
 end
 
 """
@@ -149,8 +225,7 @@ end
     prop_arr::Vector{T},
     grid_ggd::OMAS.edge_profiles__grid_ggd,
     grid_subset_index::Int,
-    value_field::Symbol=:values;
-    use_nearest_n::Int=4,
+    value_field::Symbol=:values
 
 ) where {T <: edge_profiles__prop_on_subset}
 
@@ -161,13 +236,12 @@ function interp(
     prop_arr::Vector{T},
     grid_ggd::OMAS.edge_profiles__grid_ggd,
     grid_subset_index::Int,
-    value_field::Symbol=:values;
-    use_nearest_n::Int=4,
+    value_field::Symbol=:values,
 ) where {T <: edge_profiles__prop_on_subset}
     prop = get_prop_with_grid_subset_index(prop_arr, grid_subset_index)
     subset = get_grid_subset_with_index(grid_ggd, grid_subset_index)
     space = grid_ggd.space[subset.element[1].object[1].space]
-    return interp(getfield(prop, value_field), space, subset; use_nearest_n)
+    return interp(getfield(prop, value_field), space, subset)
 end
 
 const RHO_EXT_POS = [1.0001, 1.1, 5]

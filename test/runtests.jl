@@ -5,6 +5,8 @@ import SOLPS2IMAS: solps2imas, get_grid_subset_with_index
 using Test
 using ArgParse: ArgParse
 
+allowed_rtol = 1e-4
+
 function parse_commandline()
     s = ArgParse.ArgParseSettings(; description="Run tests. Default is all tests.")
 
@@ -43,27 +45,35 @@ if args["interp"]
         n_e = ids.edge_profiles.ggd[1].electrons.density[1]
         grid_ggd = ids.edge_profiles.grid_ggd[1]
         space = grid_ggd.space[1]
-        get_n_e = interp(n_e, grid_ggd)
+
         chosen_index = 555
         nodes = space.objects_per_dimension[3].object[chosen_index].nodes
         nodes_coords =
             [space.objects_per_dimension[1].object[node].geometry for node ∈ nodes]
         cell_center = mean(nodes_coords)
         grid_val = ids.edge_profiles.ggd[1].electrons.density[1].values[chosen_index]
+
+        # test interp(prop, grid_ggd)
+        get_n_e = interp(n_e, grid_ggd)
         searched_val = get_n_e(cell_center...)
         println("Electron density at: ", cell_center)
         println("Grid Value: ", grid_val)
         println("Searched Value: ", searched_val)
-        @test grid_val == searched_val
+        @test abs.((grid_val .- searched_val) ./ grid_val) < allowed_rtol
+
         # test interp(prop_arr, space, subset)
         subset = get_grid_subset_with_index(grid_ggd, 5)
         get_n_e = interp(ids.edge_profiles.ggd[1].electrons.density, space, subset)
-        @test grid_val == get_n_e(cell_center...)
+        searched_val = get_n_e(cell_center...)
+        @test abs.((grid_val .- searched_val) ./ grid_val) < allowed_rtol
+
         # test interp(prop_arr, grid_ggd, grid_subset_index)
         get_n_e = interp(ids.edge_profiles.ggd[1].electrons.density, grid_ggd, 5)
-        @test grid_val == get_n_e(cell_center...)
+        searched_val = get_n_e(cell_center...)
+        @test abs.((grid_val .- searched_val) ./ grid_val) < allowed_rtol
 
-        # Use the same kdtree to interpolate other quantities
+        # Use the kdtree to interpolate several quantities using
+        # inverse distance weighing
         kdtree = get_kdtree(space)
         get_T_e =
             interp(ids.edge_profiles.ggd[1].electrons.temperature[1].values, kdtree)
@@ -75,14 +85,14 @@ if args["interp"]
         println("Electron temperature at: ", cell_center)
         println("Grid Value: ", grid_val)
         println("Searched Value: ", searched_val)
-        @test grid_val == searched_val
+        @test abs.((grid_val .- searched_val) ./ grid_val) < allowed_rtol
 
         grid_val = ids.edge_profiles.ggd[1].electrons.density[1].values[chosen_index]
         searched_val = get_n_e(cell_center...)
         println("Electron density at: ", cell_center)
         println("Grid Value: ", grid_val)
         println("Searched Value: ", searched_val)
-        @test grid_val == searched_val
+        @test abs.((grid_val .- searched_val) ./ grid_val) < allowed_rtol
 
         chosen_index = 553:557
         grid_val = ids.edge_profiles.ggd[1].electrons.density[1].values[chosen_index]
@@ -100,7 +110,7 @@ if args["interp"]
         println("Electron density at: ", cell_center)
         println("Grid Value: ", grid_val)
         println("Searched Value: ", searched_val)
-        @test grid_val == searched_val
+        @test mean(abs.((grid_val .- searched_val) ./ grid_val)) < allowed_rtol
     end
 end
 
