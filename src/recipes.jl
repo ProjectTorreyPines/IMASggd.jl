@@ -1,3 +1,6 @@
+using RecipesBase
+using ColorSchemes: ColorSchemes
+
 @recipe function f(space::OMAS.edge_profiles__grid_ggd___space)
     nodes = space.objects_per_dimension[1].object
     edges = space.objects_per_dimension[2].object
