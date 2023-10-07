@@ -63,7 +63,7 @@ function project_prop_on_subset!(prop_arr::Vector{T},
     from_subset::OMAS.edge_profiles__grid_ggd___grid_subset,
     to_subset::OMAS.edge_profiles__grid_ggd___grid_subset,
     space::OMAS.edge_profiles__grid_ggd___space,
-    value_field::Symbol=:values,
+    value_field::Symbol=:values;
     interp_method=:thin_plate_spline,
     interp_kwargs=Dict(),
 ) where {T <: edge_profiles__prop_on_subset}
