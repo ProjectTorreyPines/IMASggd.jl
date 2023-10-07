@@ -88,8 +88,10 @@ function project_prop_on_subset!(prop_arr::Vector{T},
         if interp_method == :thin_plate_spline
             prop_interp = interp(prop_arr, space, from_subset)
         elseif interp_method == :KDTree
-            prop_interp =
-                interp(from_prop, get_kdtree(space, from_subset; interp_kwargs...))
+            prop_interp = interp(
+                from_prop_values,
+                get_kdtree(space, from_subset; interp_kwargs...),
+            )
         else
             error("Supported interpolation methods are :thin_plate_spline and :KDTree")
         end
