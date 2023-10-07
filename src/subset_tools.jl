@@ -64,6 +64,8 @@ function project_prop_on_subset!(prop_arr::Vector{T},
     to_subset::OMAS.edge_profiles__grid_ggd___grid_subset,
     space::OMAS.edge_profiles__grid_ggd___space,
     value_field::Symbol=:values,
+    interp_method=:thin_plate_spline,
+    interp_kwargs=Dict(),
 ) where {T <: edge_profiles__prop_on_subset}
     if from_subset.element[1].object[1].dimension ==
        to_subset.element[1].object[1].dimension
@@ -83,7 +85,14 @@ function project_prop_on_subset!(prop_arr::Vector{T},
         to_prop_values = getfield(to_prop, value_field)
         from_prop_values = getfield(from_prop, value_field)
         resize!(to_prop_values, length(to_subset.element))
-        prop_interp = interp(prop_arr, space, from_subset)
+        if interp_method == :thin_plate_spline
+            prop_interp = interp(prop_arr, space, from_subset)
+        elseif interp_method == :KDTree
+            prop_interp =
+                interp(from_prop, get_kdtree(space, from_subset; interp_kwargs...))
+        else
+            error("Supported interpolation methods are :thin_plate_spline and :KDTree")
+        end
         to_prop_values = prop_interp.(to_subset_centers)
         return to_subset_centers, to_prop_values
     else
