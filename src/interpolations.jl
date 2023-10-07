@@ -152,7 +152,7 @@ function interp(
     space::OMAS.edge_profiles__grid_ggd___space,
 ) where {T <: Real}
     nodes = [Tuple(node.geometry) for node ∈ space.objects_per_dimension[1].object]
-    return interp(prop, nodes)
+    return interp(prop_values, nodes)
 end
 
 """
