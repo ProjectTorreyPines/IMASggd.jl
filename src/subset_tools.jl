@@ -45,17 +45,17 @@ space: (optional) space object in grid_ggd is required only when from_subset is
 Returns:
 NOTE: This function ends in ! which means it updates prop argument in place. But for
 the additional utility, this function also returns a tuple
-(to_subset_centers, to_prop.values) when from_subset dimension is greater than
+(to_subset_centers, to_prop_values) when from_subset dimension is greater than
                                     to_subset dimension
 OR
-(to_subset_ele_obj_inds, to_prop.values) when from_subset dimension is same as
+(to_subset_ele_obj_inds, to_prop_values) when from_subset dimension is same as
                                          to_subset dimension)
 Descriptions:
 to_subset_centers: center of cells or center of edges of the to_subset where property
                    values are defined and stored
 to_subset_ele_obj_inds: Indices of the elements of to_subset where property values are
                         defined and stored
-to_prop.values: The projected values of the properties added to prop object in a new
+to_prop_values: The projected values of the properties added to prop object in a new
                 instance
 """
 #! format: on
@@ -63,6 +63,9 @@ function project_prop_on_subset!(prop_arr::Vector{T},
     from_subset::OMAS.edge_profiles__grid_ggd___grid_subset,
     to_subset::OMAS.edge_profiles__grid_ggd___grid_subset,
     space::OMAS.edge_profiles__grid_ggd___space,
+    value_field::Symbol=:values;
+    interp_method=:thin_plate_spline,
+    interp_kwargs=Dict(),
 ) where {T <: edge_profiles__prop_on_subset}
     if from_subset.element[1].object[1].dimension ==
        to_subset.element[1].object[1].dimension
@@ -79,10 +82,21 @@ function project_prop_on_subset!(prop_arr::Vector{T},
         to_prop = prop_arr[end]
         to_prop.grid_index = from_prop.grid_index
         to_prop.grid_subset_index = to_subset.identifier.index
-        resize!(to_prop.values, length(to_subset.element))
-        prop_interp = interp(prop_arr, space, from_subset)
-        to_prop.values = prop_interp.(to_subset_centers)
-        return to_subset_centers, to_prop.values
+        to_prop_values = getfield(to_prop, value_field)
+        from_prop_values = getfield(from_prop, value_field)
+        resize!(to_prop_values, length(to_subset.element))
+        if interp_method == :thin_plate_spline
+            prop_interp = interp(prop_arr, space, from_subset)
+        elseif interp_method == :KDTree
+            prop_interp = interp(
+                from_prop_values,
+                get_kdtree(space, from_subset; interp_kwargs...),
+            )
+        else
+            error("Supported interpolation methods are :thin_plate_spline and :KDTree")
+        end
+        to_prop_values = prop_interp.(to_subset_centers)
+        return to_subset_centers, to_prop_values
     else
         error("to_subset is higher dimensional than from_subset")
     end
@@ -91,6 +105,7 @@ end
 function project_prop_on_subset!(prop_arr::Vector{T},
     from_subset::OMAS.edge_profiles__grid_ggd___grid_subset,
     to_subset::OMAS.edge_profiles__grid_ggd___grid_subset,
+    value_field::Symbol=:values,
 ) where {T <: edge_profiles__prop_on_subset}
     from_prop = get_prop_with_grid_subset_index(prop_arr, from_subset.identifier.index)
     if isnothing(from_prop)
@@ -102,6 +117,8 @@ function project_prop_on_subset!(prop_arr::Vector{T},
         to_prop = prop_arr[end]
         to_prop.grid_index = from_prop.grid_index
         to_prop.grid_subset_index = to_subset.identifier.index
+        to_prop_values = getfield(to_prop, value_field)
+        from_prop_values = getfield(from_prop, value_field)
         from_subset_ele_obj_inds = [ele.object[1].index for ele ∈ from_subset.element]
         to_subset_ele_obj_inds = [ele.object[1].index for ele ∈ to_subset.element]
         if to_subset_ele_obj_inds ⊆ from_subset_ele_obj_inds
@@ -115,10 +132,10 @@ function project_prop_on_subset!(prop_arr::Vector{T},
                 end
             end
             filtered_values =
-                [from_prop.values[from_ele_ind] for from_ele_ind ∈ from_ele_inds]
-            resize!(to_prop.values, length(filtered_values))
-            to_prop.values = filtered_values
-            return to_subset_ele_obj_inds, to_prop.values
+                [from_prop_values[from_ele_ind] for from_ele_ind ∈ from_ele_inds]
+            resize!(to_prop_values, length(filtered_values))
+            to_prop_values = filtered_values
+            return to_subset_ele_obj_inds, to_prop_values
         else
             error("to_subset does not lie entirely inside from_subset. Projection ",
                 "not possible.",
