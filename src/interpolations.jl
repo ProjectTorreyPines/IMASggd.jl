@@ -3,6 +3,10 @@ import StaticArrays: SVector
 import Statistics: mean
 import Interpolations: linear_interpolation
 
+export interp
+export get_kdtree
+export get_TPS_mats
+
 function get_kdtree(space::OMAS.edge_profiles__grid_ggd___space)
     grid_nodes = space.objects_per_dimension[1].object
     grid_faces = space.objects_per_dimension[3].object
@@ -101,18 +105,13 @@ function _condition_y(y::Vector{T}) where {T <: Real}
 end
 
 """
-    interp(y::Vector{T}, x::Vector{Tuple{U, U}}) where {T <: Real, U <: Real}
+    get_TPS_mats(x::Vector{Tuple{U, U}}) where {U <: Real}
 
-Thin plate smoothing interpolation function for a 2d space scalar function. The
-algorithm has been adopted from:
-
-http://www.geometrictools.com/Documentation/ThinPlateSplines.pdf
-
-This is an implementation of Euler-Lagrange equation for minimizing bending energy of a
-surface.
+We can separate matrix operations of thin plate spline method to utilize
+the calculation for itnerpolating over same space. Similar to the idea of
+reusing KDTree like above.
 """
-function interp(y::Vector{T}, x::Vector{Tuple{U, U}}) where {T <: Real, U <: Real}
-    length(x) == length(y) || error("Space (r, z) and values must have the same length")
+function get_TPS_mats(x::Vector{Tuple{U, U}}) where {U <: Real}
     # Setup matrices as defined in Eq (30)
     M = Matrix{U}(undef, length(x), length(x))
     for ii ∈ eachindex(x)
@@ -126,14 +125,54 @@ function interp(y::Vector{T}, x::Vector{Tuple{U, U}}) where {T <: Real, U <: Rea
         N[ii, 2] = x[ii][1]
         N[ii, 3] = x[ii][2]
     end
+    Minv = M^(-1)
+    return Minv, N, (N' * Minv * N)^(-1) * N' * Minv, x
+end
+
+"""
+    interp(
+    y::Vector{T},
+    TPS_mats::Tuple{Matrix{U}, Matrix{U}, Matrix{U}, Vector{Tuple{U, U}}},
+
+) where {T <: Real, U <: Real}
+
+Lowest level function for Thin Plate Spline method
+"""
+function interp(
+    y::Vector{T},
+    TPS_mats::Tuple{Matrix{U}, Matrix{U}, Matrix{U}, Vector{Tuple{U, U}}},
+) where {T <: Real, U <: Real}
+    Minv, N, y2b, x = TPS_mats
     cy, inv_cy = _condition_y(y)
     # From Eq(31)
-    b = (N' * M^(-1) * N)^(-1) * N' * M^(-1) * cy
-    a = M^(-1) * (cy - N * b)
+    b = y2b * cy
+    a = Minv * (cy - N * b)
     function get_interp_val(r::Real, z::Real)
         return inv_cy(sum(a .* [_G((r, z), xi) for xi ∈ x]) + sum(b .* [1, r, z]))
     end
-    return get_interp_val(gp::Tuple{V, V}) where {V <: Real} = get_interp_val(gp...)
+    get_interp_val(gp::Tuple{V, V}) where {V <: Real} = get_interp_val(gp...)
+    return get_interp_val
+end
+
+"""
+    interp(y::Vector{T}, x::Vector{Tuple{U, U}}) where {T <: Real, U <: Real}
+
+Thin plate smoothing interpolation function for a 2d space scalar function. The
+algorithm has been adopted from:
+
+http://www.geometrictools.com/Documentation/ThinPlateSplines.pdf
+
+This is an implementation of Euler-Lagrange equation for minimizing bending energy of a
+surface.
+"""
+function interp(y::Vector{T}, x::Vector{Tuple{U, U}}) where {T <: Real, U <: Real}
+    length(x) == length(y) || error("Space (r, z) and values must have the same length")
+    return interp(y, get_TPS_mats(x))
+end
+
+function get_TPS_mats(space::OMAS.edge_profiles__grid_ggd___space)
+    nodes = [Tuple(node.geometry) for node ∈ space.objects_per_dimension[1].object]
+    return get_TPS_mats(nodes)
 end
 
 """
@@ -151,8 +190,14 @@ function interp(
     prop_values::Vector{T},
     space::OMAS.edge_profiles__grid_ggd___space,
 ) where {T <: Real}
-    nodes = [Tuple(node.geometry) for node ∈ space.objects_per_dimension[1].object]
-    return interp(prop_values, nodes)
+    return interp(prop_values, get_TPS_mats(space))
+end
+
+function get_TPS_mats(
+    space::OMAS.edge_profiles__grid_ggd___space,
+    subset::OMAS.edge_profiles__grid_ggd___grid_subset,
+)
+    return get_TPS_mats(get_subset_centers(space, subset))
 end
 
 """
@@ -171,7 +216,7 @@ function interp(
     space::OMAS.edge_profiles__grid_ggd___space,
     subset::OMAS.edge_profiles__grid_ggd___grid_subset,
 ) where {T <: Real}
-    return interp(prop_values, get_subset_centers(space, subset))
+    return interp(prop_values, get_TPS_mats(space, subset))
 end
 
 """
@@ -242,6 +287,45 @@ function interp(
     subset = get_grid_subset_with_index(grid_ggd, grid_subset_index)
     space = grid_ggd.space[subset.element[1].object[1].space]
     return interp(getfield(prop, value_field), space, subset)
+end
+
+function get_TPS_mats(grid_ggd::OMAS.edge_profiles__grid_ggd, grid_subset_index::Int)
+    subset = get_grid_subset_with_index(grid_ggd, grid_subset_index)
+    space = grid_ggd.space[subset.element[1].object[1].space]
+    return get_TPS_mats(space, subset)
+end
+
+#! format off
+"""
+    interp(
+    prop_arr::Vector{T},
+    TPS_mats::Tuple{Matrix{U}, Matrix{U}, Matrix{U}, Vector{Tuple{U, U}}},
+    grid_subset_index::Int,
+    value_field::Symbol=:values,
+
+) where {T <: edge_profiles__prop_on_subset}
+
+Same use case as above but allows one to reuse previously calculated TPS matrices.
+
+Example:
+TPS_mat = get_TPS_mats(dd.edge_profiles.grid_ggd[1], 5)
+
+for it ∈ eachindex(dd.edge_profiles.ggd)
+    get_n_e = interp(dd.edge_profiles.ggd[it].electrons.density, TPS_mat_sep, 5)
+    println("This time step has n_e at (0, 0) = ", get_n_e(, 0))
+end
+
+This will run faster has heavy matrix calculations will happen only once.
+"""
+#! format on
+function interp(
+    prop_arr::Vector{T},
+    TPS_mats::Tuple{Matrix{U}, Matrix{U}, Matrix{U}, Vector{Tuple{U, U}}},
+    grid_subset_index::Int,
+    value_field::Symbol=:values,
+) where {T <: edge_profiles__prop_on_subset, U <: Real}
+    prop = get_prop_with_grid_subset_index(prop_arr, grid_subset_index)
+    return interp(getfield(prop, value_field), TPS_mats)
 end
 
 const RHO_EXT_POS = [1.0001, 1.1, 5]
