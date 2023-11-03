@@ -161,10 +161,10 @@ end
 
 Overloading ∈ operator to check if a point is inside a subset of space.
 
-If the subset is 0-dimensional, all points are searched. If the subset is 1-dimensional,
+If the subset is 1-dimensional, all points are searched. If the subset is 2-dimensional,
 it is checked if the point is within the enclosed area. It is assumed that a
-1-dimensional subset used in such a context will form a closed area. If the subset is
-2-dimensional, its boundary is calculated on the fly. If used multiple times, it is
+2-dimensional subset used in such a context will form a closed area. If the subset is
+3-dimensional, its boundary is calculated on the fly. If used multiple times, it is
 recommended to calculate the boundary once and store it in a variable.
 """
 function Base.:∈(
@@ -179,12 +179,12 @@ function Base.:∈(
     dim = subset.element[1].object[1].dimension
     nodes = space.objects_per_dimension[1].object
     edges = space.objects_per_dimension[2].object
-    if dim == 2
+    if dim == 3
         subset_bnd = OMAS.edge_profiles__grid_ggd___grid_subset()
         subset_bnd.element = get_subset_boundary(space, subset)
-    elseif dim == 1
+    elseif dim == 2
         subset_bnd = subset
-    elseif dim == 0
+    elseif dim == 1
         for ele ∈ subset.element
             node = nodes[ele.object[1].index]
             if node.geometry[1] == r && node.geometry[2] == z
