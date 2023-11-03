@@ -1,7 +1,7 @@
-import GGDUtils: interp, get_kdtree, project_prop_on_subset!
+import GGDUtils: interp, get_kdtree, project_prop_on_subset!, get_grid_subset_with_index
 import OMAS: h5i2imas
 import Statistics: mean
-import SOLPS2IMAS: solps2imas, get_grid_subset_with_index
+import SOLPS2IMAS: solps2imas
 using Test
 using ArgParse: ArgParse
 
