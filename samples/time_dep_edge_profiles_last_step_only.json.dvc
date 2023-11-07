@@ -1,0 +1,12 @@
+md5: 3ea764e4095ca2b8a5359cd76259e26a
+frozen: true
+deps:
+- path: ITER_Lore_2296_00000/IMAS/time_dep_edge_profiles_last_step_only.json
+  repo:
+    url: git@github.com:ProjectTorreyPines/SOLPSTestSamples.git
+    rev_lock: 88f14955a52cd4d4fd7e86e2274436a34f4203ec
+outs:
+- md5: db47dee590648770a5ce49c0e0706acf
+  size: 4087084
+  hash: md5
+  path: time_dep_edge_profiles_last_step_only.json
