@@ -46,15 +46,15 @@ end
     yaxis --> "Z / m"
     subset_edge_inds = []
     label_assigned = false
-    if subset.element[1].object[1].dimension == 2
+    if subset.element[1].object[1].dimension == 3
         for ele ∈ subset.element
             for bnd_ind ∈ cells[ele.object[1].index].boundary
                 union!(subset_edge_inds, bnd_ind)
             end
         end
-    elseif subset.element[1].object[1].dimension == 1
+    elseif subset.element[1].object[1].dimension == 2
         subset_edge_inds = [ele.object[1].index for ele ∈ subset.element]
-    elseif subset.element[1].object[1].dimension == 0
+    elseif subset.element[1].object[1].dimension == 1
         for ele ∈ subset.element
             @series begin
                 seriestype := :scatter
@@ -100,14 +100,13 @@ end
     subset = get_grid_subset_with_index(grid_ggd, prop.grid_subset_index)
     space = grid_ggd.space[subset.element[1].object[1].space]
     nodes = space.objects_per_dimension[1].object
-    # edges = space.objects_per_dimension[2].object
     cells = space.objects_per_dimension[3].object
     legend --> false
     size --> [600, 900]
     xaxis --> "R / m"
     yaxis --> "Z / m"
     layout := @layout [a{0.95w} b]
-    if subset.element[1].object[1].dimension == 2
+    if subset.element[1].object[1].dimension == 3
         if :seriescolor in keys(plotattributes)
             color_scheme = plotattributes[:seriescolor]
         else
