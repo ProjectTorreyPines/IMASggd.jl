@@ -68,11 +68,9 @@ minimizing bending energy of a surface.
 http://www.geometrictools.com/Documentation/ThinPlateSplines.pdf Eq(28)
 """
 function _G(x1::Tuple{U, U}, x2::Tuple{U, U}) where {U <: Real}
-    r = sqrt(sum((x1 .- x2) .^ 2))
-    if r == 0
-        return 0
-    end
-    return r^2 * log(r) / 8 / π
+    r2 = sum((x1 .- x2) .^ 2) # r²
+    # Note this uses log(r) / 8π = log(r²) / 16π
+    return (r2 == 0) ? zero(U) : r2 * log(r2) * inv_16pi
 end
 
 """
@@ -87,21 +85,16 @@ minimum absolute value. This is done to avoid numerical issues with interpolatio
 Return values are conditioned y and inverse conditioning function.
 """
 function _condition_y(y::Vector{T}) where {T <: Real}
-    do_log = false
     ylims = extrema(y)
-    if prod(ylims) > 0
-        if ylims[2] / ylims[1] > 100
-            do_log = true
-        end
+    do_log = (prod(ylims) > 0) && (ylims[2] / ylims[1] > 100)
+    norm_by = do_log ?  minimum(abs.(ylims)) * sign(ylims[1]) : ylims[2] - ylims[1]
+    mean_y = mean(y)
+    cy = do_log ? log10.(y ./ norm_by) : (y .- mean_y) ./ norm_by
+    inv_cy = let norm_by = norm_by, do_log = do_log, mean_y = mean_y
+        x -> do_log ? (10.0 ^ x) * norm_by : (x * norm_by) + mean_y
     end
-    if do_log
-        norm_by = minimum(abs.(ylims)) * sign(ylims[1])
-        return log10.(y ./ norm_by), (cy) -> (10 .^ (cy)) * norm_by
-    else
-        norm_by = ylims[2] - ylims[1]
-        mean_y = mean(y)
-        return (y .- mean_y) ./ norm_by, (cy) -> (cy .* norm_by) .+ mean_y
-    end
+    return cy, inv_cy
+
 end
 
 """
@@ -129,6 +122,12 @@ function get_TPS_mats(x::Vector{Tuple{U, U}}) where {U <: Real}
     return Minv, N, (N' * Minv * N)^(-1) * N' * Minv, x
 end
 
+function get_interp_val(r, z, x, a, b, inv_cy)
+    tot = sum(a[k] * _G((r, z), x[k]) for k in eachindex(a))
+    tot += b[1] + r * b[2] + z * b[3]
+    return inv_cy(tot)
+end
+
 """
     interp(
     y::Vector{T},
@@ -147,11 +146,10 @@ function interp(
     # From Eq(31)
     b = y2b * cy
     a = Minv * (cy - N * b)
-    function get_interp_val(r::Real, z::Real)
-        return inv_cy(sum(a .* [_G((r, z), xi) for xi ∈ x]) + sum(b .* [1, r, z]))
+    g = let x = x, a = a, b = b, inv_cy = inv_cy
+        (r, z) -> get_interp_val(r, z, x, a, b, inv_cy)
     end
-    get_interp_val(gp::Tuple{V, V}) where {V <: Real} = get_interp_val(gp...)
-    return get_interp_val
+    return g
 end
 
 """
@@ -322,10 +320,11 @@ function interp(
     prop_arr::Vector{T},
     TPS_mats::Tuple{Matrix{U}, Matrix{U}, Matrix{U}, Vector{Tuple{U, U}}},
     grid_subset_index::Int,
-    value_field::Symbol=:values,
-) where {T <: edge_profiles__prop_on_subset, U <: Real}
+    value_field::Val{V}=Val(:values),
+) where {T <: edge_profiles__prop_on_subset, U <: Real, V}
     prop = get_prop_with_grid_subset_index(prop_arr, grid_subset_index)
-    return interp(getfield(prop, value_field), TPS_mats)
+    field = getfield(prop, V)
+    return interp(field, TPS_mats)
 end
 
 const RHO_EXT_POS = [1.0001, 1.1, 5]
@@ -363,9 +362,10 @@ function interp(eqt::OMAS.equilibrium__time_slice)
     prepend!(rhon_eq_ext, RHO_EXT_NEG)
     rz2psin = linear_interpolation((r_eq, z_eq), psinrz)
     psin2rhon = linear_interpolation(psin_eq_ext, rhon_eq_ext)
-    get_interp_val(r::Real, z::Real) = psin2rhon(rz2psin(r, z))
-    get_interp_val(rz::Tuple{Real, Real}) = get_interp_val(rz...)
-    return get_interp_val
+    g = let psin2rhon=psin2rhon, rz2psin=rz2psin
+        (r, z) -> psin2rhon(rz2psin(r, z))
+    end
+    return g
 end
 
 """
@@ -423,9 +423,10 @@ function interp(
     rz2rho::Function,
 ) where {T <: Real}
     itp = interp(prop, prof)
-    get_interp_val(r::Real, z::Real) = itp.(rz2rho(r, z))
-    get_interp_val(rz::Tuple{Real, Real}) = get_interp_val(rz...)
-    return get_interp_val
+    g = let itp=itp
+        (r, z) -> itp(rz2rho(r, z))
+    end
+    return g
 end
 
 """
