@@ -87,14 +87,13 @@ Return values are conditioned y and inverse conditioning function.
 function _condition_y(y::Vector{T}) where {T <: Real}
     ylims = extrema(y)
     do_log = (prod(ylims) > 0) && (ylims[2] / ylims[1] > 100)
-    norm_by = do_log ?  minimum(abs.(ylims)) * sign(ylims[1]) : ylims[2] - ylims[1]
+    norm_by = do_log ? minimum(abs.(ylims)) * sign(ylims[1]) : ylims[2] - ylims[1]
     mean_y = mean(y)
     cy = do_log ? log10.(y ./ norm_by) : (y .- mean_y) ./ norm_by
     inv_cy = let norm_by = norm_by, do_log = do_log, mean_y = mean_y
-        x -> do_log ? (10.0 ^ x) * norm_by : (x * norm_by) + mean_y
+        x -> do_log ? (10.0^x) * norm_by : (x * norm_by) + mean_y
     end
     return cy, inv_cy
-
 end
 
 """
@@ -123,7 +122,7 @@ function get_TPS_mats(x::Vector{Tuple{U, U}}) where {U <: Real}
 end
 
 function get_interp_val(r, z, x, a, b, inv_cy)
-    tot = sum(a[k] * _G((r, z), x[k]) for k in eachindex(a))
+    tot = sum(a[k] * _G((r, z), x[k]) for k ∈ eachindex(a))
     tot += b[1] + r * b[2] + z * b[3]
     return inv_cy(tot)
 end
@@ -146,10 +145,10 @@ function interp(
     # From Eq(31)
     b = y2b * cy
     a = Minv * (cy - N * b)
-    g = let x = x, a = a, b = b, inv_cy = inv_cy
-        (r, z) -> get_interp_val(r, z, x, a, b, inv_cy)
+    return let x = x, a = a, b = b, inv_cy = inv_cy
+        g(r, z) = get_interp_val(r, z, x, a, b, inv_cy)
+        g(gp::Tuple{V, V}) where {V <: Real} = g(gp...)
     end
-    return g
 end
 
 """
@@ -362,7 +361,7 @@ function interp(eqt::OMAS.equilibrium__time_slice)
     prepend!(rhon_eq_ext, RHO_EXT_NEG)
     rz2psin = linear_interpolation((r_eq, z_eq), psinrz)
     psin2rhon = linear_interpolation(psin_eq_ext, rhon_eq_ext)
-    g = let psin2rhon=psin2rhon, rz2psin=rz2psin
+    g = let psin2rhon = psin2rhon, rz2psin = rz2psin
         (r, z) -> psin2rhon(rz2psin(r, z))
     end
     return g
@@ -423,7 +422,7 @@ function interp(
     rz2rho::Function,
 ) where {T <: Real}
     itp = interp(prop, prof)
-    g = let itp=itp
+    g = let itp = itp
         (r, z) -> itp(rz2rho(r, z))
     end
     return g
