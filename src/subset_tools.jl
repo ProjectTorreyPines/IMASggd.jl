@@ -96,6 +96,10 @@ function get_grid_subset_with_index(
             return subset
         end
     end
+    # BCL 12/8: Creates type instability, but maybe okay since it's a "simple" Union
+    #           subset::Union{Int64, OMAS.edge_profiles__grid_ggd___grid_subset}
+    #
+    #           Better would be to immediately throw an error or return nothing
     return 0  # Indicates failure
 end
 
@@ -202,7 +206,7 @@ function get_subset_centers(space::OMAS.edge_profiles__grid_ggd___space,
     subset_space = get_subset_space(space, subset.element)
     grid_nodes = space.objects_per_dimension[1].object
     return [
-        Tuple(mean([grid_nodes[node].geometry for node ∈ obj.nodes])) for
+        Tuple(mean(SVector{2}(grid_nodes[node].geometry) for node ∈ obj.nodes)) for
         obj ∈ subset_space
     ]
 end
@@ -213,7 +217,7 @@ end
     from_subset::OMAS.edge_profiles__grid_ggd___grid_subset,
     to_subset::OMAS.edge_profiles__grid_ggd___grid_subset,
     space::OMAS.edge_profiles__grid_ggd___space,
-) 
+)
 
 This function can be used to add another instance on a property vector representing the
 value in a new subset that can be taken as a projection from an existing larger subset.
@@ -389,21 +393,17 @@ function Base.:∈(
     count = 0
     for ele ∈ subset_bnd.element
         edge = edges[ele.object[1].index]
-        r_max = maximum([nodes[node].geometry[1] for node ∈ edge.nodes])
-        r_min = minimum([nodes[node].geometry[1] for node ∈ edge.nodes])
+        r_max = maximum(nodes[node].geometry[1] for node ∈ edge.nodes)
+        r_min = minimum(nodes[node].geometry[1] for node ∈ edge.nodes)
         if r_min <= r < r_max
-            z_max = maximum([nodes[node].geometry[2] for node ∈ edge.nodes])
+            z_max = maximum(nodes[node].geometry[2] for node ∈ edge.nodes)
             if z < z_max
                 count += 1
             end
         end
     end
     # If it is even, the point is outside the boundary
-    if count % 2 == 1
-        return true
-    else
-        return false
-    end
+    return count % 2 == 1
 end
 
 function get_prop_with_grid_subset_index(
