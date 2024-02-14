@@ -6,6 +6,7 @@ import Statistics: norm, dot
     nodes = space.objects_per_dimension[1].object
     edges = space.objects_per_dimension[2].object
     legend --> false
+    subplot --> 1
     linewidth --> 0.2
     linecolor --> :black
     size --> [600, 900]
@@ -40,6 +41,7 @@ end
     edges = space.objects_per_dimension[2].object
     cells = space.objects_per_dimension[3].object
     legend --> false
+    subplot --> 1
     linewidth --> 0.2
     linecolor --> :black
     size --> [600, 900]
@@ -219,6 +221,7 @@ end
 @recipe function f(
     ifo_ch_los::OMAS.interferometer__channel___line_of_sight,
 )
+    subplot --> 1
     size --> [600, 900]
     xaxis --> "R / m"
     yaxis --> "Z / m"
@@ -303,6 +306,7 @@ end
             ifo_ch.n_e_line_average
         end
     else
+        subplot --> 1
         xaxis --> "time / s"
         yaxis --> "Integrrated n_e / m^-2"
         @series begin
@@ -316,6 +320,7 @@ end
 @recipe function f(
     ifo_ch_n_e_line_average::OMAS.interferometer__channel___n_e_line_average,
 )
+    subplot --> 1
     xaxis --> "time / s"
     yaxis --> "Average n_e / m^-3"
     @series begin
