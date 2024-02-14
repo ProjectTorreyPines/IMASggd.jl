@@ -105,7 +105,7 @@ end
     nodes = space.objects_per_dimension[1].object
     cells = space.objects_per_dimension[3].object
     legend --> false
-    size --> [600, 900]
+    size --> [635, 900]
     xaxis --> "R / m"
     yaxis --> "Z / m"
     layout := @layout [a{0.95w} b]
