@@ -234,7 +234,7 @@ function interp(
     grid_ggd::IMASDD.edge_profiles__grid_ggd,
     value_field::Symbol=:values,
 )
-    subset = get_grid_subset_with_index(grid_ggd, prop.grid_subset_index)
+    subset = get_grid_subset(grid_ggd, prop.grid_subset_index)
     space = grid_ggd.space[subset.element[1].object[1].space]
     return interp(getfield(prop, value_field), space, subset)
 end
@@ -281,13 +281,13 @@ function interp(
     value_field::Symbol=:values,
 ) where {T <: edge_profiles__prop_on_subset}
     prop = get_prop_with_grid_subset_index(prop_arr, grid_subset_index)
-    subset = get_grid_subset_with_index(grid_ggd, grid_subset_index)
+    subset = get_grid_subset(grid_ggd, grid_subset_index)
     space = grid_ggd.space[subset.element[1].object[1].space]
     return interp(getfield(prop, value_field), space, subset)
 end
 
 function get_TPS_mats(grid_ggd::IMASDD.edge_profiles__grid_ggd, grid_subset_index::Int)
-    subset = get_grid_subset_with_index(grid_ggd, grid_subset_index)
+    subset = get_grid_subset(grid_ggd, grid_subset_index)
     space = grid_ggd.space[subset.element[1].object[1].space]
     return get_TPS_mats(space, subset)
 end
