@@ -1,4 +1,4 @@
-import GGDUtils: interp, get_kdtree, project_prop_on_subset!, get_grid_subset_with_index
+import GGDUtils: interp, get_kdtree, project_prop_on_subset!, get_grid_subset
 import OMAS as IMASDD
 import Statistics: mean
 using Test
@@ -66,7 +66,7 @@ if args["interp"]
         @test abs.((grid_val .- searched_val) ./ grid_val) < allowed_rtol
 
         # test interp(prop_arr, space, subset)
-        subset = get_grid_subset_with_index(grid_ggd, 5)
+        subset = get_grid_subset(grid_ggd, 5)
         print("interp(prop_arr, space, subset) time: ")
         @time get_n_e =
             interp(ids.edge_profiles.ggd[1].electrons.density, space, subset)
@@ -128,9 +128,9 @@ if args["projection"]
         space = ids.edge_profiles.grid_ggd[1].space[1]
         prop = ids.edge_profiles.ggd[1].electrons.density
         # All cells
-        from_subset = get_grid_subset_with_index(ids.edge_profiles.grid_ggd[1], 5)
+        from_subset = get_grid_subset(ids.edge_profiles.grid_ggd[1], 5)
         # separatix
-        to_subset = get_grid_subset_with_index(ids.edge_profiles.grid_ggd[1], 16)
+        to_subset = get_grid_subset(ids.edge_profiles.grid_ggd[1], 16)
         print("project_prop_on_subset!(prop, from_subset, to_subset, space) time: ")
         @time separatix_centers, values_at_separatix =
             project_prop_on_subset!(prop, from_subset, to_subset, space)
@@ -140,7 +140,7 @@ if args["projection"]
         # end
 
         subset_core =
-            get_grid_subset_with_index(ids.edge_profiles.grid_ggd[1], 22)
+            get_grid_subset(ids.edge_profiles.grid_ggd[1], 22)
         print("project_prop_on_subset!(prop, from_subset, subset_core) time: ")
         @time core_element_inds, values_at_core =
             project_prop_on_subset!(prop, from_subset, subset_core)
@@ -161,9 +161,9 @@ if args["in"]
     @testset "test ∈" begin
         grid_ggd = ids.edge_profiles.grid_ggd[1]
         space = grid_ggd.space[1]
-        subset_corebnd = get_grid_subset_with_index(grid_ggd, 15)
-        subset_sol = get_grid_subset_with_index(grid_ggd, 23)
-        subset_odr = get_grid_subset_with_index(grid_ggd, 24)
+        subset_corebnd = get_grid_subset(grid_ggd, 15)
+        subset_sol = get_grid_subset(grid_ggd, 23)
+        subset_odr = get_grid_subset(grid_ggd, 24)
 
         @test (6.0, 0.0) ∈ (subset_corebnd, space)
         @test (5.0, -2.5) ∉ (subset_corebnd, space)
