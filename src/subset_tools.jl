@@ -79,7 +79,7 @@ function get_subset_space(space::IMASDD.edge_profiles__grid_ggd___space,
 end
 
 """
-    get_grid_subset_with_index(
+    get_grid_subset(
     grid_ggd::IMASDD.edge_profiles__grid_ggd,
     grid_subset_index::Int,
 
@@ -96,17 +96,18 @@ function get_grid_subset(
             return subset
         end
     end
-    return error("Subset", grid_subset_index, "not found.")
+
+    return error("Subset ", grid_subset_index, " not found.")
 end
 
 """
-    get_grid_subset_with_index(
+    get_grid_subset(
     grid_ggd::IMASDD.edge_profiles__grid_ggd,
-    grid_subset_index::Int,
+    grid_subset_name::String,
 
 )
 
-Returns the grid_subset in a grid_ggd with the matching grid_subset_index
+Returns the grid_subset in a grid_ggd with the matching grid_subset_name
 """
 function get_grid_subset(
     grid_ggd::IMASDD.edge_profiles__grid_ggd,
@@ -118,7 +119,7 @@ function get_grid_subset(
         end
     end
 
-    return error("Subset", grid_subset_name, "not found.")
+    return error("Subset ", grid_subset_name, " not found.")
 end
 
 """
