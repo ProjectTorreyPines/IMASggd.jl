@@ -8,13 +8,18 @@ help:
 	@echo
 
 env_with_cloned_repo r:
+	@echo "Pulling sample files using dvc"
+	-dvc pull
 	@echo "Creating Julia environment by creating local clones of dependent repositories"
-	@echo "Cloning the repositories"
-	-cd ..; git clone "git@github.com:ProjectTorreyPines/OMAS.jl.git"
-	@echo "Generating Project.toml and Manifest.toml"
-	julia --project=. -e 'using Pkg; Pkg.rm("OMAS"); Pkg.develop(path="../OMAS.jl"); Pkg.instantiate()'
+	@echo "Cloning the repositories and generating Manifest.toml"
+	-dn=$(shell dirname $(shell pwd)); \
+	if [[ "$${dn:(-10)}" == ".julia/dev" ]]; then rn="OMAS" ; else rn="OMAS.jl"; fi; \
+	git clone "git@github.com:ProjectTorreyPines/OMAS.jl.git" ../$${rn}; \
+	julia --project=. -e 'using Pkg; Pkg.rm("OMAS"); Pkg.develop(path="../'$${rn}'"); Pkg.instantiate()'
 
 env_with_git_url u:
+	@echo "Pulling sample files using dvc"
+	-dvc pull
 	@echo "Creating Julia environment with the git urls without creating local clones"
 	@echo "Generating Project.toml and Manifest.toml"
 	julia --project=. -e 'using Pkg; Pkg.rm("OMAS"); Pkg.add(url="git@github.com:ProjectTorreyPines/OMAS.jl.git", rev="master"); Pkg.instantiate()'
