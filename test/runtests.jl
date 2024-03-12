@@ -1,5 +1,5 @@
 import GGDUtils: interp, get_kdtree, project_prop_on_subset!, get_grid_subset_with_index
-import OMAS: json2imas
+import IMASDD: json2imas
 import Statistics: mean
 using Test
 using ArgParse: ArgParse
