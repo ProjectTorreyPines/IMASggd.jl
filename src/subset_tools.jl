@@ -66,13 +66,13 @@ end
 
 """
     get_subset_space(space::IMASDD.edge_profiles__grid_ggd___space,
-    elements::Vector{IMASDD.edge_profiles__grid_ggd___grid_subset___element})
+    elements::AbstractVector{<:IMASDD.edge_profiles__grid_ggd___grid_subset___element})
 
 Returns an array of space object indices corresponding to the correct
 objects_per_dimension (nodes, edges or cells) for the subset elements.
 """
 function get_subset_space(space::IMASDD.edge_profiles__grid_ggd___space,
-    elements::Vector{IMASDD.edge_profiles__grid_ggd___grid_subset___element})
+    elements::AbstractVector{<:IMASDD.edge_profiles__grid_ggd___grid_subset___element})
     nD = elements[1].object[1].dimension
     nD_objects = space.objects_per_dimension[nD].object
     return [nD_objects[ele.object[1].index] for ele ∈ elements]
@@ -156,7 +156,7 @@ end
 
 """
     subset_do(set_operator,
-    itrs::Vararg{Vector{IMASDD.edge_profiles__grid_ggd___grid_subset___element}};
+    itrs::Vararg{AbstractVector{<:IMASDD.edge_profiles__grid_ggd___grid_subset___element}};
     space::IMASDD.edge_profiles__grid_ggd___space=IMASDD.edge_profiles__grid_ggd___space(),
     use_nodes=false)
 
@@ -168,7 +168,9 @@ Note: that the arguments are subset.element (not the subset itself). Similarly, 
 return object is a list of IMASDD.edge_profiles__grid_ggd___grid_subset___element.
 """
 function subset_do(set_operator,
-    itrs::Vararg{Vector{IMASDD.edge_profiles__grid_ggd___grid_subset___element}};
+    itrs::Vararg{
+        AbstractVector{<:IMASDD.edge_profiles__grid_ggd___grid_subset___element},
+    };
     space::IMASDD.edge_profiles__grid_ggd___space=IMASDD.edge_profiles__grid_ggd___space(),
     use_nodes=false)
     if use_nodes
@@ -213,7 +215,7 @@ end
 
 #! format: off
 """
-    project_prop_on_subset!(prop_arr::Vector{T},
+    project_prop_on_subset!(prop_arr::AbstractVector{T},
     from_subset::IMASDD.edge_profiles__grid_ggd___grid_subset,
     to_subset::IMASDD.edge_profiles__grid_ggd___grid_subset,
     space::IMASDD.edge_profiles__grid_ggd___space,
@@ -253,7 +255,7 @@ to_prop_values: The projected values of the properties added to prop object in a
                 instance
 """
 #! format: on
-function project_prop_on_subset!(prop_arr::Vector{T},
+function project_prop_on_subset!(prop_arr::AbstractVector{T},
     from_subset::IMASDD.edge_profiles__grid_ggd___grid_subset,
     to_subset::IMASDD.edge_profiles__grid_ggd___grid_subset,
     space::IMASDD.edge_profiles__grid_ggd___space,
@@ -296,7 +298,7 @@ function project_prop_on_subset!(prop_arr::Vector{T},
     end
 end
 
-function project_prop_on_subset!(prop_arr::Vector{T},
+function project_prop_on_subset!(prop_arr::AbstractVector{T},
     from_subset::IMASDD.edge_profiles__grid_ggd___grid_subset,
     to_subset::IMASDD.edge_profiles__grid_ggd___grid_subset,
     value_field::Symbol=:values,
@@ -407,7 +409,7 @@ function Base.:∈(
 end
 
 function get_prop_with_grid_subset_index(
-    prop::Vector{T},
+    prop::AbstractVector{T},
     grid_subset_index::Int,
 ) where {T <: edge_profiles__prop_on_subset}
     for p ∈ prop

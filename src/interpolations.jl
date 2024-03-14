@@ -241,7 +241,7 @@ end
 
 """
     interp(
-    prop_arr::Vector{T},
+    prop_arr::AbstractVector{T},
     space::IMASDD.edge_profiles__grid_ggd___space,
     subset::IMASDD.edge_profiles__grid_ggd___grid_subset,
     value_field::Symbol=:values
@@ -253,7 +253,7 @@ sol = get_grid_subset_with_index(dd.edge_profiles.grid_ggd[1], 23)
 get_electron_density = interp(dd.edge_profiles.ggd[1].electrons.density, space, sol)
 """
 function interp(
-    prop_arr::Vector{T},
+    prop_arr::AbstractVector{T},
     space::IMASDD.edge_profiles__grid_ggd___space,
     subset::IMASDD.edge_profiles__grid_ggd___grid_subset,
     value_field::Symbol=:values,
@@ -264,7 +264,7 @@ end
 
 """
     interp(
-    prop_arr::Vector{T},
+    prop_arr::AbstractVector{T},
     grid_ggd::IMASDD.edge_profiles__grid_ggd,
     grid_subset_index::Int,
     value_field::Symbol=:values
@@ -275,7 +275,7 @@ Example:
 get_n_e_sep = interp(dd.edge_profiles.ggd[1].electrons.density, grid_ggd, 16)
 """
 function interp(
-    prop_arr::Vector{T},
+    prop_arr::AbstractVector{T},
     grid_ggd::IMASDD.edge_profiles__grid_ggd,
     grid_subset_index::Int,
     value_field::Symbol=:values,
@@ -295,7 +295,7 @@ end
 #! format off
 """
     interp(
-    prop_arr::Vector{T},
+    prop_arr::AbstractVector{T},
     TPS_mats::Tuple{Matrix{U}, Matrix{U}, Matrix{U}, Vector{Tuple{U, U}}},
     grid_subset_index::Int,
     value_field::Symbol=:values,
@@ -316,7 +316,7 @@ This will run faster has heavy matrix calculations will happen only once.
 """
 #! format on
 function interp(
-    prop_arr::Vector{T},
+    prop_arr::AbstractVector{T},
     TPS_mats::Tuple{Matrix{U}, Matrix{U}, Matrix{U}, Vector{Tuple{U, U}}},
     grid_subset_index::Int,
     value_field::Val{V}=Val(:values),

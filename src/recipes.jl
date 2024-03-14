@@ -160,7 +160,7 @@ end
 end
 
 @recipe function f(
-    grid_ggd_arr::Vector{IMASDD.edge_profiles__grid_ggd},
+    grid_ggd_arr::AbstractVector{<:IMASDD.edge_profiles__grid_ggd},
     prop::IMASDD.IDSvectorElement,
 )
     found = false
