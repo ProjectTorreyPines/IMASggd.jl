@@ -51,8 +51,8 @@ end
     label_assigned = false
     if subset.element[1].object[1].dimension == 3
         for ele ∈ subset.element
-            for bnd_ind ∈ cells[ele.object[1].index].boundary
-                union!(subset_edge_inds, bnd_ind)
+            for bnd ∈ cells[ele.object[1].index].boundary
+                union!(subset_edge_inds, bnd.index)
             end
         end
     elseif subset.element[1].object[1].dimension == 2
