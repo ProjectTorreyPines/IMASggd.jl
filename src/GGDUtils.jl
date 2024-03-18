@@ -1,6 +1,6 @@
 module GGDUtils
 
-using IMASDD: IMASDD
+import OMAS as IMASDD
 
 const inv_16pi = 1.0 / (16π)
 
