@@ -1,5 +1,5 @@
 import GGDUtils: interp, get_kdtree, project_prop_on_subset!, get_grid_subset_with_index
-import IMASDD: json2imas
+import OMAS as IMASDD
 import Statistics: mean
 using Test
 using ArgParse: ArgParse
@@ -34,7 +34,7 @@ end
 args = parse_commandline()
 
 print("json2imas() time: ")
-@time ids = json2imas(
+@time ids = IMASDD.json2imas(
     "$(@__DIR__)/../samples/time_dep_edge_profiles_last_step_only.json",
 )
 

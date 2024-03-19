@@ -99,7 +99,10 @@ end
     end
 end
 
-@recipe function f(grid_ggd::IMASDD.edge_profiles__grid_ggd, prop::IMASDD.IDSvectorElement)
+@recipe function f(
+    grid_ggd::IMASDD.edge_profiles__grid_ggd,
+    prop::IMASDD.IDSvectorElement,
+)
     subset = get_grid_subset_with_index(grid_ggd, prop.grid_subset_index)
     space = grid_ggd.space[subset.element[1].object[1].space]
     nodes = space.objects_per_dimension[1].object
