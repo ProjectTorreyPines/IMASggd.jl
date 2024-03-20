@@ -79,7 +79,7 @@ function get_subset_space(space::IMASDD.edge_profiles__grid_ggd___space,
 end
 
 """
-    get_grid_subset_with_index(
+    get_grid_subset(
     grid_ggd::IMASDD.edge_profiles__grid_ggd,
     grid_subset_index::Int,
 
@@ -87,7 +87,7 @@ end
 
 Returns the grid_subset in a grid_ggd with the matching grid_subset_index
 """
-function get_grid_subset_with_index(
+function get_grid_subset(
     grid_ggd::IMASDD.edge_profiles__grid_ggd,
     grid_subset_index::Int,
 )
@@ -96,11 +96,30 @@ function get_grid_subset_with_index(
             return subset
         end
     end
-    # BCL 12/8: Creates type instability, but maybe okay since it's a "simple" Union
-    #           subset::Union{Int64, IMASDD.edge_profiles__grid_ggd___grid_subset}
-    #
-    #           Better would be to immediately throw an error or return nothing
-    return 0  # Indicates failure
+
+    return error("Subset ", grid_subset_index, " not found.")
+end
+
+"""
+    get_grid_subset(
+    grid_ggd::IMASDD.edge_profiles__grid_ggd,
+    grid_subset_name::String,
+
+)
+
+Returns the grid_subset in a grid_ggd with the matching grid_subset_name
+"""
+function get_grid_subset(
+    grid_ggd::IMASDD.edge_profiles__grid_ggd,
+    grid_subset_name::String,
+)
+    for subset ∈ grid_ggd.grid_subset
+        if subset.identifier.name == grid_subset_name
+            return subset
+        end
+    end
+
+    return error("Subset ", grid_subset_name, " not found.")
 end
 
 """
