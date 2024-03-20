@@ -1,13 +1,13 @@
 """
     get_types_with(parent::Type, field::Symbol)
 
-A type creation utility meant for searching types in OMAS database. This function
+A type creation utility meant for searching types in IMAS database. This function
 returns a list of types that are fields at any level below the parent data type which
 have a particular field present in it.
 
 Example:
 
-get_types_with(OMAS.edge_profiles, :grid_subset_index)
+get_types_with(IMASDD.edge_profiles, :grid_subset_index)
 
 returns all edge_profiles types that have a subfield named grid_subset_index.
 """
@@ -37,4 +37,4 @@ function get_types_with(parent::Type, field::Symbol)
 end
 
 edge_profiles__prop_on_subset =
-    Union{get_types_with(OMAS.edge_profiles, :grid_subset_index)...}
+    Union{get_types_with(IMASDD.edge_profiles, :grid_subset_index)...}

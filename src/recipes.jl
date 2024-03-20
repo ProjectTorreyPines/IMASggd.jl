@@ -2,7 +2,7 @@ using RecipesBase
 using ColorSchemes: ColorSchemes
 import Statistics: norm, dot
 
-@recipe function f(space::OMAS.edge_profiles__grid_ggd___space)
+@recipe function f(space::IMASDD.edge_profiles__grid_ggd___space)
     nodes = space.objects_per_dimension[1].object
     edges = space.objects_per_dimension[2].object
     legend --> false
@@ -34,8 +34,8 @@ import Statistics: norm, dot
 end
 
 @recipe function f(
-    space::OMAS.edge_profiles__grid_ggd___space,
-    subset::OMAS.edge_profiles__grid_ggd___grid_subset,
+    space::IMASDD.edge_profiles__grid_ggd___space,
+    subset::IMASDD.edge_profiles__grid_ggd___grid_subset,
 )
     nodes = space.objects_per_dimension[1].object
     edges = space.objects_per_dimension[2].object
@@ -99,7 +99,10 @@ end
     end
 end
 
-@recipe function f(grid_ggd::OMAS.edge_profiles__grid_ggd, prop::OMAS.IDSvectorElement)
+@recipe function f(
+    grid_ggd::IMASDD.edge_profiles__grid_ggd,
+    prop::IMASDD.IDSvectorElement,
+)
     subset = get_grid_subset_with_index(grid_ggd, prop.grid_subset_index)
     space = grid_ggd.space[subset.element[1].object[1].space]
     nodes = space.objects_per_dimension[1].object
@@ -160,8 +163,8 @@ end
 end
 
 @recipe function f(
-    grid_ggd_arr::Vector{OMAS.edge_profiles__grid_ggd},
-    prop::OMAS.IDSvectorElement,
+    grid_ggd_arr::AbstractVector{<:IMASDD.edge_profiles__grid_ggd},
+    prop::IMASDD.IDSvectorElement,
 )
     found = false
     for grid_ggd ∈ grid_ggd_arr
@@ -180,7 +183,7 @@ end
 end
 
 @recipe f(
-    ifo::OMAS.interferometer,
+    ifo::IMASDD.interferometer,
 ) =
     for ch ∈ ifo.channel
         @series begin
@@ -189,7 +192,7 @@ end
     end
 
 @recipe function f(
-    ifo_ch::OMAS.interferometer__channel,
+    ifo_ch::IMASDD.interferometer__channel,
 )
     if :plot_type ∈ keys(plotattributes)
         plot_type = plotattributes[:plot_type]
@@ -219,7 +222,7 @@ end
 end
 
 @recipe function f(
-    ifo_ch_los::OMAS.interferometer__channel___line_of_sight,
+    ifo_ch_los::IMASDD.interferometer__channel___line_of_sight,
 )
     subplot --> 1
     size --> [600, 900]
@@ -228,7 +231,7 @@ end
     fp = ifo_ch_los.first_point
     sp = ifo_ch_los.second_point
     tp = ifo_ch_los.third_point
-    if tp == OMAS.interferometer__channel___line_of_sight__third_point()
+    if tp == IMASDD.interferometer__channel___line_of_sight__third_point()
         tp = fp
     end
 
@@ -299,7 +302,7 @@ end
 end
 
 @recipe function f(
-    ifo_ch_n_e_line::OMAS.interferometer__channel___n_e_line,
+    ifo_ch_n_e_line::IMASDD.interferometer__channel___n_e_line,
 )
     if :average ∈ keys(plotattributes)
         @series begin
@@ -318,7 +321,7 @@ end
 end
 
 @recipe function f(
-    ifo_ch_n_e_line_average::OMAS.interferometer__channel___n_e_line_average,
+    ifo_ch_n_e_line_average::IMASDD.interferometer__channel___n_e_line_average,
 )
     subplot --> 1
     xaxis --> "time / s"
