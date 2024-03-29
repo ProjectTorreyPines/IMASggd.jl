@@ -371,12 +371,21 @@ function deepcopy_subset(subset::IMASDD.edge_profiles__grid_ggd___grid_subset)
     new_base = getfield(new_subset, :base)
     resize!(new_base, length(base))
     for (ii, b) ∈ enumerate(base)
-        new_base[ii].jacobian = deepcopy(getfield(b, :jacobian))
-        new_base[ii].tensor_contravariant = deepcopy(getfield(b, :tensor_contravariant))
-        new_base[ii].tensor_covariant = deepcopy(getfield(b, :tensor_covariant))
+        if !IMASDD.ismissing(b, :jacobian)
+            new_base[ii].jacobian = deepcopy(getfield(b, :jacobian))
+        end
+        if !IMASDD.ismissing(b, :tensor_contravariant)
+            new_base[ii].tensor_contravariant =
+                deepcopy(getfield(b, :tensor_contravariant))
+        end
+        if !IMASDD.ismissing(b, :tensor_covariant)
+            new_base[ii].tensor_covariant = deepcopy(getfield(b, :tensor_covariant))
+        end
     end
 
-    new_subset.dimension = deepcopy(getfield(subset, :dimension))
+    if !IMASDD.ismissing(subset, :dimension)
+        new_subset.dimension = deepcopy(getfield(subset, :dimension))
+    end
 
     element = getfield(subset, :element)
     new_element = getfield(new_subset, :element)
@@ -386,23 +395,42 @@ function deepcopy_subset(subset::IMASDD.edge_profiles__grid_ggd___grid_subset)
         new_object = getfield(new_element[ii], :object)
         resize!(new_object, length(object))
         for (jj, obj) ∈ enumerate(object)
-            new_object[jj].dimension = deepcopy(getfield(obj, :dimension))
-            new_object[jj].index = deepcopy(getfield(obj, :index))
-            new_object[jj].space = deepcopy(getfield(obj, :space))
+            if !IMASDD.ismissing(obj, :dimension)
+                new_object[jj].dimension = deepcopy(getfield(obj, :dimension))
+            end
+            if !IMASDD.ismissing(obj, :index)
+                new_object[jj].index = deepcopy(getfield(obj, :index))
+            end
+            if !IMASDD.ismissing(obj, :space)
+                new_object[jj].space = deepcopy(getfield(obj, :space))
+            end
         end
     end
 
     identifier = getfield(subset, :identifier)
     new_identifier = getfield(new_subset, :identifier)
-    new_identifier.index = deepcopy(getfield(identifier, :index))
-    new_identifier.name = deepcopy(getfield(identifier, :name))
-    new_identifier.description = deepcopy(getfield(identifier, :description))
+    if !IMASDD.ismissing(identifier, :index)
+        new_identifier.index = deepcopy(getfield(identifier, :index))
+    end
+    if !IMASDD.ismissing(identifier, :name)
+        new_identifier.name = deepcopy(getfield(identifier, :name))
+    end
+    if !IMASDD.ismissing(identifier, :description)
+        new_identifier.description = deepcopy(getfield(identifier, :description))
+    end
 
     metric = getfield(subset, :metric)
     new_metric = getfield(new_subset, :metric)
-    new_metric.jacobian = deepcopy(getfield(metric, :jacobian))
-    new_metric.tensor_contravariant = deepcopy(getfield(metric, :tensor_contravariant))
-    new_metric.tensor_covariant = deepcopy(getfield(metric, :tensor_covariant))
+    if !IMASDD.ismissing(metric, :jacobian)
+        new_metric.jacobian = deepcopy(getfield(metric, :jacobian))
+    end
+    if !IMASDD.ismissing(metric, :tensor_contravariant)
+        new_metric.tensor_contravariant =
+            deepcopy(getfield(metric, :tensor_contravariant))
+    end
+    if !IMASDD.ismissing(metric, :tensor_covariant)
+        new_metric.tensor_covariant = deepcopy(getfield(metric, :tensor_covariant))
+    end
     return new_subset
 end
 
