@@ -461,17 +461,18 @@ function Base.:∈(
 )
     r, z = point
     subset, space = subset_of_space
-    dim = subset.element[1].object[1].dimension
-    nodes = space.objects_per_dimension[1].object
-    edges = space.objects_per_dimension[2].object
+    dim = getfield(getfield(getfield(subset, :element)[1], :object)[1], :dimension)
+    opd = getfield(space, :objects_per_dimension)
+    nodes = getfield(opd[1], :object)
+    edges = getfield(opd[2], :object)
     if dim == 3
         subset_bnd = IMASDD.edge_profiles__grid_ggd___grid_subset()
         subset_bnd.element = get_subset_boundary(space, subset)
     elseif dim == 2
         subset_bnd = subset
     elseif dim == 1
-        for ele ∈ subset.element
-            node = nodes[ele.object[1].index]
+        for ele ∈ getfield(subset, :element)
+            node = nodes[getfield(getfield(ele, :object)[1], :index)]
             if node.geometry[1] == r && node.geometry[2] == z
                 return true
             end
@@ -482,12 +483,18 @@ function Base.:∈(
     end
     # Count number of times an upward going ray from (r,z) intersects the boundary
     count = 0
-    for ele ∈ subset_bnd.element
-        edge = edges[ele.object[1].index]
-        r_max = maximum(nodes[node].geometry[1] for node ∈ edge.nodes)
-        r_min = minimum(nodes[node].geometry[1] for node ∈ edge.nodes)
+    for ele ∈ getfield(subset_bnd, :element)
+        edge = edges[getfield(getfield(ele, :object)[1], :index)]
+        edge_nodes_r = zeros(2)
+        edge_nodes_z = zeros(2)
+        for (ii, node) ∈ enumerate(getfield(edge, :nodes))
+            edge_nodes_r[ii] = getfield(nodes[node], :geometry)[1]
+            edge_nodes_z[ii] = getfield(nodes[node], :geometry)[2]
+        end
+        r_max = maximum(edge_nodes_r)
+        r_min = minimum(edge_nodes_r)
         if r_min <= r < r_max
-            z_max = maximum(nodes[node].geometry[2] for node ∈ edge.nodes)
+            z_max = maximum(edge_nodes_z)
             if z < z_max
                 count += 1
             end
