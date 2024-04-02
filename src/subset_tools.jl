@@ -364,6 +364,76 @@ function project_prop_on_subset!(prop_arr::AbstractVector{T},
     end
 end
 
+function deepcopy_subset(subset::IMASDD.edge_profiles__grid_ggd___grid_subset)
+    new_subset = IMASDD.edge_profiles__grid_ggd___grid_subset()
+
+    base = getfield(subset, :base)
+    new_base = getfield(new_subset, :base)
+    resize!(new_base, length(base))
+    for (ii, b) ∈ enumerate(base)
+        if !IMASDD.ismissing(b, :jacobian)
+            new_base[ii].jacobian = deepcopy(getfield(b, :jacobian))
+        end
+        if !IMASDD.ismissing(b, :tensor_contravariant)
+            new_base[ii].tensor_contravariant =
+                deepcopy(getfield(b, :tensor_contravariant))
+        end
+        if !IMASDD.ismissing(b, :tensor_covariant)
+            new_base[ii].tensor_covariant = deepcopy(getfield(b, :tensor_covariant))
+        end
+    end
+
+    if !IMASDD.ismissing(subset, :dimension)
+        new_subset.dimension = deepcopy(getfield(subset, :dimension))
+    end
+
+    element = getfield(subset, :element)
+    new_element = getfield(new_subset, :element)
+    resize!(new_element, length(element))
+    for (ii, ele) ∈ enumerate(element)
+        object = getfield(ele, :object)
+        new_object = getfield(new_element[ii], :object)
+        resize!(new_object, length(object))
+        for (jj, obj) ∈ enumerate(object)
+            if !IMASDD.ismissing(obj, :dimension)
+                new_object[jj].dimension = deepcopy(getfield(obj, :dimension))
+            end
+            if !IMASDD.ismissing(obj, :index)
+                new_object[jj].index = deepcopy(getfield(obj, :index))
+            end
+            if !IMASDD.ismissing(obj, :space)
+                new_object[jj].space = deepcopy(getfield(obj, :space))
+            end
+        end
+    end
+
+    identifier = getfield(subset, :identifier)
+    new_identifier = getfield(new_subset, :identifier)
+    if !IMASDD.ismissing(identifier, :index)
+        new_identifier.index = deepcopy(getfield(identifier, :index))
+    end
+    if !IMASDD.ismissing(identifier, :name)
+        new_identifier.name = deepcopy(getfield(identifier, :name))
+    end
+    if !IMASDD.ismissing(identifier, :description)
+        new_identifier.description = deepcopy(getfield(identifier, :description))
+    end
+
+    metric = getfield(subset, :metric)
+    new_metric = getfield(new_subset, :metric)
+    if !IMASDD.ismissing(metric, :jacobian)
+        new_metric.jacobian = deepcopy(getfield(metric, :jacobian))
+    end
+    if !IMASDD.ismissing(metric, :tensor_contravariant)
+        new_metric.tensor_contravariant =
+            deepcopy(getfield(metric, :tensor_contravariant))
+    end
+    if !IMASDD.ismissing(metric, :tensor_covariant)
+        new_metric.tensor_covariant = deepcopy(getfield(metric, :tensor_covariant))
+    end
+    return new_subset
+end
+
 """
     Base.:∈(
     point::Tuple{Real, Real},
@@ -391,17 +461,18 @@ function Base.:∈(
 )
     r, z = point
     subset, space = subset_of_space
-    dim = subset.element[1].object[1].dimension
-    nodes = space.objects_per_dimension[1].object
-    edges = space.objects_per_dimension[2].object
+    dim = getfield(getfield(getfield(subset, :element)[1], :object)[1], :dimension)
+    opd = getfield(space, :objects_per_dimension)
+    nodes = getfield(opd[1], :object)
+    edges = getfield(opd[2], :object)
     if dim == 3
         subset_bnd = IMASDD.edge_profiles__grid_ggd___grid_subset()
         subset_bnd.element = get_subset_boundary(space, subset)
     elseif dim == 2
         subset_bnd = subset
     elseif dim == 1
-        for ele ∈ subset.element
-            node = nodes[ele.object[1].index]
+        for ele ∈ getfield(subset, :element)
+            node = nodes[getfield(getfield(ele, :object)[1], :index)]
             if node.geometry[1] == r && node.geometry[2] == z
                 return true
             end
@@ -412,12 +483,18 @@ function Base.:∈(
     end
     # Count number of times an upward going ray from (r,z) intersects the boundary
     count = 0
-    for ele ∈ subset_bnd.element
-        edge = edges[ele.object[1].index]
-        r_max = maximum(nodes[node].geometry[1] for node ∈ edge.nodes)
-        r_min = minimum(nodes[node].geometry[1] for node ∈ edge.nodes)
+    for ele ∈ getfield(subset_bnd, :element)
+        edge = edges[getfield(getfield(ele, :object)[1], :index)]
+        edge_nodes_r = zeros(2)
+        edge_nodes_z = zeros(2)
+        for (ii, node) ∈ enumerate(getfield(edge, :nodes))
+            edge_nodes_r[ii] = getfield(nodes[node], :geometry)[1]
+            edge_nodes_z[ii] = getfield(nodes[node], :geometry)[2]
+        end
+        r_max = maximum(edge_nodes_r)
+        r_min = minimum(edge_nodes_r)
         if r_min <= r < r_max
-            z_max = maximum(nodes[node].geometry[2] for node ∈ edge.nodes)
+            z_max = maximum(edge_nodes_z)
             if z < z_max
                 count += 1
             end
