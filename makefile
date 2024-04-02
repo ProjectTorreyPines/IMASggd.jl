@@ -12,10 +12,8 @@ env_with_cloned_repo r:
 	-dvc pull
 	@echo "Creating Julia environment by creating local clones of dependent repositories"
 	@echo "Cloning the repositories and generating Manifest.toml"
-	-dn=$(shell dirname $(shell pwd)); \
-	if [[ "$${dn:(-10)}" == ".julia/dev" ]]; then ext="" ; else ext=".jl";fi; \
-	git clone "git@github.com:ProjectTorreyPines/IMASDD.jl.git" ../IMASDD$${ext}; \
-	julia --project=. -e 'using Pkg; Pkg.rm(["IMASDD"]); Pkg.develop(path="../IMASDD'$${ext}'"); Pkg.instantiate()'
+	-git clone "git@github.com:ProjectTorreyPines/IMASDD.jl.git" ../IMASDD; \
+	julia --project=. -e 'using Pkg; Pkg.rm(["IMASDD"]); Pkg.develop(path="../IMASDD"); Pkg.instantiate()'
 
 env_with_git_url u:
 	@echo "Pulling sample files using dvc"
