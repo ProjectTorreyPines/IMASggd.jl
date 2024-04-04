@@ -66,7 +66,7 @@ if args["interp"]
         @test abs.((grid_val .- searched_val) ./ grid_val) < allowed_rtol
 
         # test interp(prop_arr, space, subset)
-        subset = get_grid_subset(grid_ggd, 5)
+        subset = get_grid_subset(grid_ggd, -5)
         print("interp(prop_arr, space, subset) time: ")
         @time get_n_e =
             interp(ids.edge_profiles.ggd[1].electrons.density, space, subset)
@@ -75,7 +75,7 @@ if args["interp"]
 
         # test interp(prop_arr, grid_ggd, grid_subset_index)
         print("interp(prop_arr, grid_ggd, grid_subset_index) time: ")
-        @time get_n_e = interp(ids.edge_profiles.ggd[1].electrons.density, grid_ggd, 5)
+        @time get_n_e = interp(ids.edge_profiles.ggd[1].electrons.density, grid_ggd, -5)
         searched_val = get_n_e(cell_center...)
         @test abs.((grid_val .- searched_val) ./ grid_val) < allowed_rtol
 
@@ -128,7 +128,7 @@ if args["projection"]
         space = ids.edge_profiles.grid_ggd[1].space[1]
         prop = ids.edge_profiles.ggd[1].electrons.density
         # All cells
-        from_subset = get_grid_subset(ids.edge_profiles.grid_ggd[1], 5)
+        from_subset = get_grid_subset(ids.edge_profiles.grid_ggd[1], -5)
         # separatix
         to_subset = get_grid_subset(ids.edge_profiles.grid_ggd[1], 16)
         print("project_prop_on_subset!(prop, from_subset, to_subset, space) time: ")
