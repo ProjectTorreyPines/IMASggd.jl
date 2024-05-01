@@ -225,6 +225,9 @@ function get_subset_centers(space::IMASDD.edge_profiles__grid_ggd___space,
     subset::IMASDD.edge_profiles__grid_ggd___grid_subset,
 )
     subset_space = get_subset_space(space, subset.element)
+    if subset.element[1].object[1].dimension == 1
+        return [Tuple(obj.geometry) for obj ∈ subset_space]
+    end
     grid_nodes = space.objects_per_dimension[1].object
     return [
         Tuple(mean(SVector{2}(grid_nodes[node].geometry) for node ∈ obj.nodes)) for
@@ -279,9 +282,11 @@ function project_prop_on_subset!(prop_arr::AbstractVector{T},
     to_subset::IMASDD.edge_profiles__grid_ggd___grid_subset,
     space::IMASDD.edge_profiles__grid_ggd___space,
     value_field::Symbol=:values;
-    interp_method::Symbol=:thin_plate_spline,
-    interp_kwargs=Dict(),
-) where {T <: edge_profiles__prop_on_subset}
+    TPS_mats::Union{
+        Nothing,
+        Tuple{Matrix{U}, Matrix{U}, Matrix{U}, Vector{Tuple{U, U}}},
+    }=nothing,
+) where {T <: edge_profiles__prop_on_subset, U <: Real}
     if from_subset.element[1].object[1].dimension ==
        to_subset.element[1].object[1].dimension
         return project_prop_on_subset!(prop, from_subset, to_subset)
@@ -300,17 +305,13 @@ function project_prop_on_subset!(prop_arr::AbstractVector{T},
         to_prop_values = getfield(to_prop, value_field)
         from_prop_values = getfield(from_prop, value_field)
         resize!(to_prop_values, length(to_subset.element))
-        if interp_method == :thin_plate_spline
+        if isnothing(TPS_mats)
             prop_interp = interp(prop_arr, space, from_subset)
-        elseif interp_method == :KDTree
-            prop_interp = interp(
-                from_prop_values,
-                get_kdtree(space, from_subset; interp_kwargs...),
-            )
         else
-            error("Supported interpolation methods are :thin_plate_spline and :KDTree")
+            prop_interp = interp(from_prop_values, TPS_mats)
         end
         to_prop_values = prop_interp.(to_subset_centers)
+        setproperty!(to_prop, value_field, to_prop_values)
         return to_subset_centers, to_prop_values
     else
         error("to_subset is higher dimensional than from_subset")
