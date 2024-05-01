@@ -2,6 +2,12 @@ using RecipesBase
 using ColorSchemes: ColorSchemes
 import Statistics: norm, dot
 
+"""
+    plot(space::IMASDD.edge_profiles__grid_ggd___space)
+
+Plot the grid_ggd space object. Defaults to size of [600, 900] and linecolor of :black,
+linewidth of 0.2, and no legend.
+"""
 @recipe function f(space::IMASDD.edge_profiles__grid_ggd___space)
     nodes = space.objects_per_dimension[1].object
     edges = space.objects_per_dimension[2].object
@@ -33,6 +39,15 @@ import Statistics: norm, dot
     end
 end
 
+"""
+    plot(
+        space::IMASDD.edge_profiles__grid_ggd___space,
+        subset::IMASDD.edge_profiles__grid_ggd___grid_subset,
+    )
+
+Plot the a subset of a space. Defaults to size of [600, 900] and linecolor of :black,
+linewidth of 0.2, and no legend.
+"""
 @recipe function f(
     space::IMASDD.edge_profiles__grid_ggd___space,
     subset::IMASDD.edge_profiles__grid_ggd___grid_subset,
@@ -99,6 +114,18 @@ end
     end
 end
 
+"""
+    plot(
+        grid_ggd::IMASDD.edge_profiles__grid_ggd,
+        prop::IMASDD.IDSvectorElement,
+    )
+
+Plot 2D heatmap of edge_profiles_ggd property on a grid_ggd space object. Defaults to
+size of [635, 900], xaxis of "R / m", yaxis of "Z / m", and no legend. If :seriescolor
+is not provided, :inferno color scheme is used. If :colorbar_title is not provided, the
+property name is used. This function creates a plot with layout [a{0.95w} b] where a
+is the heatmap and b is the colorbar.
+"""
 @recipe function f(
     grid_ggd::IMASDD.edge_profiles__grid_ggd,
     prop::IMASDD.IDSvectorElement,
@@ -162,6 +189,18 @@ end
     end
 end
 
+"""
+    plot(
+        grid_ggd_arr::AbstractVector{<:IMASDD.edge_profiles__grid_ggd},
+        prop::IMASDD.IDSvectorElement,
+    )
+
+Plot 2D heatmap of edge_profiles_ggd property on a grid_ggd space object. Defaults to
+size of [635, 900], xaxis of "R / m", yaxis of "Z / m", and no legend. If :seriescolor
+is not provided, :inferno color scheme is used. If :colorbar_title is not provided, the
+property name is used. This function creates a plot with layout [a{0.95w} b] where a
+is the heatmap and b is the colorbar.
+"""
 @recipe function f(
     grid_ggd_arr::AbstractVector{<:IMASDD.edge_profiles__grid_ggd},
     prop::IMASDD.IDSvectorElement,
@@ -182,6 +221,21 @@ end
     end
 end
 
+"""
+    plot(
+        ifo::IMASDD.interferometer,
+    )
+
+Plot all the channels of interferometer object.
+Optional keywords:
+
+  - :plot_type: :los(default), :n_e, or :n_e_average. :los plots the line of sight of
+    the channel in a 2D plot, :n_e plots the integrated n_e along the line of sight vs
+    time, and :n_e_average plots the average n_e vs time.
+  - :mirror: true(default) or false.
+  - :mirror_length: 0.5(default).
+  - :mirror_thickness: 0.1(default).
+"""
 @recipe f(
     ifo::IMASDD.interferometer,
 ) =
@@ -191,6 +245,21 @@ end
         end
     end
 
+"""
+    plot(
+        ifo_ch::IMASDD.interferometer__channel,
+    )
+
+Plot individual channel of interferometer.
+Optional keywords:
+
+  - :plot_type: :los(default), :n_e, or :n_e_average. :los plots the line of sight of
+    the channel in a 2D plot, :n_e plots the integrated n_e along the line of sight vs
+    time, and :n_e_average plots the average n_e vs time.
+  - :mirror: true(default) or false.
+  - :mirror_length: 0.5(default).
+  - :mirror_thickness: 0.1(default).
+"""
 @recipe function f(
     ifo_ch::IMASDD.interferometer__channel,
 )
@@ -221,6 +290,26 @@ end
     end
 end
 
+"""
+    plot(
+        ifo_ch_los::IMASDD.interferometer__channel___line_of_sight,
+    )
+
+Plot line of sight of a channel of interferometer.
+
+Default plot settings:
+
+  - subplot: 1
+  - size: [600, 900]
+  - xaxis: "R / m"
+  - yaxis: "Z / m"
+
+Optional keywords:
+
+  - :mirror: true(default) or false.
+  - :mirror_length: 0.5(default).
+  - :mirror_thickness: 0.1(default).
+"""
 @recipe function f(
     ifo_ch_los::IMASDD.interferometer__channel___line_of_sight,
 )
@@ -301,6 +390,23 @@ end
     end
 end
 
+"""
+    plot(
+        ifo_ch_n_e_line::IMASDD.interferometer__channel___n_e_line,
+    )
+
+Plot line integrated electron density of a channel of interferometer.
+
+Default plot settings:
+
+  - subplot: 1
+  - xaxis: "time / s"
+  - yaxis: "Integerated n_e / m^-2"
+
+Optional keywords:
+
+  - :average: true or false(default). If true, plot the average n_e vs time.
+"""
 @recipe function f(
     ifo_ch_n_e_line::IMASDD.interferometer__channel___n_e_line,
 )
@@ -311,7 +417,7 @@ end
     else
         subplot --> 1
         xaxis --> "time / s"
-        yaxis --> "Integrrated n_e / m^-2"
+        yaxis --> "Integerated n_e / m^-2"
         @series begin
             seriestype := :path
             linewidth --> 2
@@ -320,6 +426,19 @@ end
     end
 end
 
+"""
+    plot(
+        ifo_ch_n_e_line_average::IMASDD.interferometer__channel___n_e_line_average,
+    )
+
+Plot average electron density of a channel of interferometer.
+
+Default plot settings:
+
+  - subplot: 1
+  - xaxis: "time / s"
+  - yaxis: "Average n_e / m^-3"
+"""
 @recipe function f(
     ifo_ch_n_e_line_average::IMASDD.interferometer__channel___n_e_line_average,
 )
