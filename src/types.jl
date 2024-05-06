@@ -1,3 +1,5 @@
+export get_types_with
+
 """
     get_types_with(parent::Type, field::Symbol)
 
@@ -7,7 +9,9 @@ have a particular field present in it.
 
 Example:
 
+```julia
 get_types_with(IMASDD.edge_profiles, :grid_subset_index)
+```
 
 returns all edge_profiles types that have a subfield named grid_subset_index.
 """

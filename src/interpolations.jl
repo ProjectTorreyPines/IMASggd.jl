@@ -7,6 +7,11 @@ export interp
 export get_kdtree
 export get_TPS_mats
 
+"""
+    get_kdtree(space::IMASDD.edge_profiles__grid_ggd___space)
+
+Get a KDTree for all the cells in the space for search for nearest neighbours.
+"""
 function get_kdtree(space::IMASDD.edge_profiles__grid_ggd___space)
     grid_nodes = space.objects_per_dimension[1].object
     grid_faces = space.objects_per_dimension[3].object
@@ -18,6 +23,14 @@ function get_kdtree(space::IMASDD.edge_profiles__grid_ggd___space)
     return KDTree(grid_centers; leafsize=10)
 end
 
+"""
+    get_kdtree(
+        space::IMASDD.edge_profiles__grid_ggd___space,
+        subset::IMASDD.edge_profiles__grid_ggd___grid_subset,
+    )
+
+Get a KDTree for a subset of the space for search for nearest neighbours.
+"""
 function get_kdtree(
     space::IMASDD.edge_profiles__grid_ggd___space,
     subset::IMASDD.edge_profiles__grid_ggd___grid_subset,
@@ -28,12 +41,11 @@ end
 
 """
     interp(
-    prop_values::Vector{T},
-    kdtree::KDTree;
-    use_nearest_n::Int=4,
-    weighing::Function=(d) -> 1 / d,
-
-) where {T <: Real}
+        prop_values::Vector{T},
+        kdtree::KDTree;
+        use_nearest_n::Int=4,
+        weighing::Function=(d) -> 1 / d,
+    ) where {T <: Real}
 
 Lowest level interpolation function. It takes a vector of property values and a KDTree
 defined over a 2D space with the same number of nodes as the property values. It returns
@@ -129,10 +141,9 @@ end
 
 """
     interp(
-    y::Vector{T},
-    TPS_mats::Tuple{Matrix{U}, Matrix{U}, Matrix{U}, Vector{Tuple{U, U}}},
-
-) where {T <: Real, U <: Real}
+        y::Vector{T},
+        TPS_mats::Tuple{Matrix{U}, Matrix{U}, Matrix{U}, Vector{Tuple{U, U}}},
+    ) where {T <: Real, U <: Real}
 
 Lowest level function for Thin Plate Spline method
 """
@@ -174,10 +185,9 @@ end
 
 """
     interp(
-    prop_values::Vector{T},
-    space::IMASDD.edge_profiles__grid_ggd___space
-
-) where {T <: Real}
+        prop_values::Vector{T},
+        space::IMASDD.edge_profiles__grid_ggd___space
+    ) where {T <: Real}
 
 If the whole space is provided instead of a kdtree, calculate the kdtree for whole
 space. Again, here it is assumed that the property values are porvided for each node
@@ -199,11 +209,10 @@ end
 
 """
     interp(
-    prop_values::Vector{Real},
-    space::IMASDD.edge_profiles__grid_ggd___space,
-    subset::IMASDD.edge_profiles__grid_ggd___grid_subset
-
-)
+        prop_values::Vector{Real},
+        space::IMASDD.edge_profiles__grid_ggd___space,
+        subset::IMASDD.edge_profiles__grid_ggd___grid_subset
+    )
 
 If a subset of the space is provided, calculate the kdtree for the subset. In this case
 it is assumed that the property values are provided for each element of the subset.
@@ -218,16 +227,18 @@ end
 
 """
     interp(
-    prop::edge_profiles__prop_on_subset,
-    grid_ggd::IMASDD.edge_profiles__grid_ggd,
-    value_field::Symbol=:values
-
-)
+        prop::edge_profiles__prop_on_subset,
+        grid_ggd::IMASDD.edge_profiles__grid_ggd,
+        value_field::Symbol=:values
+    )
 
 Example:
+
+```julia
 grid_ggd = dd.edge_profiles.grid_ggd[1]
 get_electron_density = interp(dd.edge_profiles.ggd[1].electrons.density[1], grid_ggd)
 get_e_field_par = interp(dd.edge_profiles.ggd[1].e_field[1], grid_ggd, :parallel)
+```
 """
 function interp(
     prop::edge_profiles__prop_on_subset,
@@ -241,16 +252,18 @@ end
 
 """
     interp(
-    prop_arr::AbstractVector{T},
-    space::IMASDD.edge_profiles__grid_ggd___space,
-    subset::IMASDD.edge_profiles__grid_ggd___grid_subset,
-    value_field::Symbol=:values
-
-) where {T <: edge_profiles__prop_on_subset}
+        prop_arr::AbstractVector{T},
+        space::IMASDD.edge_profiles__grid_ggd___space,
+        subset::IMASDD.edge_profiles__grid_ggd___grid_subset,
+        value_field::Symbol=:values
+    ) where {T <: edge_profiles__prop_on_subset}
 
 Example:
+
+```julia
 sol = get_grid_subset_with_index(dd.edge_profiles.grid_ggd[1], 23)
 get_electron_density = interp(dd.edge_profiles.ggd[1].electrons.density, space, sol)
+```
 """
 function interp(
     prop_arr::AbstractVector{T},
@@ -264,15 +277,17 @@ end
 
 """
     interp(
-    prop_arr::AbstractVector{T},
-    grid_ggd::IMASDD.edge_profiles__grid_ggd,
-    grid_subset_index::Int,
-    value_field::Symbol=:values
-
-) where {T <: edge_profiles__prop_on_subset}
+        prop_arr::AbstractVector{T},
+        grid_ggd::IMASDD.edge_profiles__grid_ggd,
+        grid_subset_index::Int,
+        value_field::Symbol=:values
+    ) where {T <: edge_profiles__prop_on_subset}
 
 Example:
+
+```julia
 get_n_e_sep = interp(dd.edge_profiles.ggd[1].electrons.density, grid_ggd, 16)
+```
 """
 function interp(
     prop_arr::AbstractVector{T},
@@ -292,29 +307,29 @@ function get_TPS_mats(grid_ggd::IMASDD.edge_profiles__grid_ggd, grid_subset_inde
     return get_TPS_mats(space, subset)
 end
 
-#! format off
 """
     interp(
-    prop_arr::AbstractVector{T},
-    TPS_mats::Tuple{Matrix{U}, Matrix{U}, Matrix{U}, Vector{Tuple{U, U}}},
-    grid_subset_index::Int,
-    value_field::Symbol=:values,
-
-) where {T <: edge_profiles__prop_on_subset}
+        prop_arr::AbstractVector{T},
+        TPS_mats::Tuple{Matrix{U}, Matrix{U}, Matrix{U}, Vector{Tuple{U, U}}},
+        grid_subset_index::Int,
+        value_field::Val{V}=Val(:values),
+    ) where {T <: edge_profiles__prop_on_subset, U <: Real, V}
 
 Same use case as above but allows one to reuse previously calculated TPS matrices.
 
 Example:
-TPS_mat = get_TPS_mats(dd.edge_profiles.grid_ggd[1], 5)
+
+```julia
+TPS_mat = get_TPS_mats(dd.edge_profiles.grid_ggd[1], 5);
 
 for it ∈ eachindex(dd.edge_profiles.ggd)
     get_n_e = interp(dd.edge_profiles.ggd[it].electrons.density, TPS_mat_sep, 5)
-    println("This time step has n_e at (0, 0) = ", get_n_e(, 0))
+    println("This time step has n_e at (0, 0) = ", get_n_e(0, 0))
 end
+```
 
-This will run faster has heavy matrix calculations will happen only once.
+This will run faster as heavy matrix calculations will happen only once.
 """
-#! format on
 function interp(
     prop_arr::AbstractVector{T},
     TPS_mats::Tuple{Matrix{U}, Matrix{U}, Matrix{U}, Vector{Tuple{U, U}}},
@@ -336,8 +351,11 @@ For a given equilibrium time slice, return a function that can be used to interp
 from (r, z) space to rho (normalized toroidal flux coordinate)space.
 
 Example:
+
+```julia
 rz2rho = interp(dd.equilibrium.time_slice[1])
-rho = rz2rho.([(r, z) for r in 3:0.01:9, for z in -5:0.01:5])
+rho = rz2rho.([(r, z) for r ∈ 3.0:0.01:9.0, z ∈ -5.0:0.01:5.0])
+```
 """
 function interp(eqt::IMASDD.equilibrium__time_slice)
     p1 = eqt.profiles_1d
@@ -369,18 +387,20 @@ end
 
 """
     interp(
-    prop::Vector{T},
-    prof::IMASDD.core_profiles__profiles_1d,
-
-) where {T <: Real}
+        prop::Vector{T},
+        prof::IMASDD.core_profiles__profiles_1d,
+    ) where {T <: Real}
 
 Returns an inteprolation function for the core profile property values defined on
 normalized toroidal flux coordinate rho.
 
 Example:
+
+```julia
 core_profile_n_e = dd.core_profiles.profiles_1d[1].electrons.density
 get_n_e = interp(core_profile_n_e, dd.core_profiles.profiles_1d[1])
 get_n_e(1) # Returns electron density at rho = 1 (separatix)
+```
 """
 function interp(
     prop::Vector{T},
@@ -399,11 +419,10 @@ end
 
 """
     interp(
-    prop::Vector{T},
-    prof::IMASDD.core_profiles__profiles_1d,
-    rz2rho::Function,
-
-)
+        prop::Vector{T},
+        prof::IMASDD.core_profiles__profiles_1d,
+        rz2rho::Function,
+    )
 
 Returns an inteprolation function in (R, Z) domain for the core profile property values
 defined on normalized toroidal flux coordinate rho and with a provided function to
@@ -411,10 +430,12 @@ convert (R,Z) to rho.
 
 Example:
 
+```julia
 rz2rho = interp(dd.equilibrium.time_slice[1])
 core_profile_n_e = dd.core_profiles.profiles_1d[1].electrons.density
 get_n_e = interp(core_profile_n_e, dd.core_profiles.profiles_1d[1], rz2rho)
 get_n_e(5.0, 3.5) # Returns electron density at (R, Z) = (5.0, 3.5)
+```
 """
 function interp(
     prop::Vector{T},
@@ -430,11 +451,10 @@ end
 
 """
     interp(
-    prop::Vector{T},
-    prof::IMASDD.core_profiles__profiles_1d,
-    eqt::IMASDD.equilibrium__time_slice,
-
-) where {T <: Real}
+        prop::Vector{T},
+        prof::IMASDD.core_profiles__profiles_1d,
+        eqt::IMASDD.equilibrium__time_slice,
+    ) where {T <: Real}
 
 Returns an inteprolation function in (R, Z) domain for the core profile property values
 defined on normalized toroidal flux coordinate rho and with a provided equilibrium time
@@ -442,10 +462,12 @@ slice to get (R, Z) to rho conversion.
 
 Example:
 
+```julia
 eqt = dd.equilibrium.time_slice[1]
 core_profile_n_e = dd.core_profiles.profiles_1d[1].electrons.density
 get_n_e = interp(core_profile_n_e, dd.core_profiles.profiles_1d[1], eqt)
 get_n_e(5.0, 3.5) # Returns electron density at (R, Z) = (5.0, 3.5)
+```
 """
 function interp(
     prop::Vector{T},
