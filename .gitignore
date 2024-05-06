@@ -4,3 +4,4 @@
 # environment.
 Manifest.toml
 examples/Project.toml
+docs/build/
