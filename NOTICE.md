@@ -6,7 +6,7 @@ The purpose of this NOTICE file is to provide legal notices and acknowledgments 
 GGDUtils.jl was originally developed under the ProjectTorreyPines by the Magnetic Fusion Energy group at General Atomics.
 
 If this software contributes to an academic publication, please cite it as follows:
-A. Gupta, et al., Proceedings of the PSI 2024 Conference, 2024.
+A. Gupta, D. Eldon, H. Anand, A. Dautt-Silva, S. De Pascuale, J. Lore, O. Meneghini, and J.S. Park, "Plasma boundary control development using a time-dependent scrape-off layer model in closed-loop simulations", Nucl. Mater. Energy, manuscript in preparation for PSI conference (2024).
 
 The names "General Atomics", and any associated logos or images, are trademarks of General Atomics. Use of these trademarks without prior written consent from General Atomics is strictly prohibited. Users cannot imply endorsement by General Atomics or contributors to the project simply because the project is part of their work.
 
