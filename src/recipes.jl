@@ -2,10 +2,17 @@ using RecipesBase
 using ColorSchemes: ColorSchemes
 import Statistics: norm, dot
 
-@recipe function f(space::OMAS.edge_profiles__grid_ggd___space)
+"""
+    plot(space::IMASDD.edge_profiles__grid_ggd___space)
+
+Plot the grid_ggd space object. Defaults to size of [600, 900] and linecolor of :black,
+linewidth of 0.2, and no legend.
+"""
+@recipe function f(space::IMASDD.edge_profiles__grid_ggd___space)
     nodes = space.objects_per_dimension[1].object
     edges = space.objects_per_dimension[2].object
     legend --> false
+    subplot --> 1
     linewidth --> 0.2
     linecolor --> :black
     size --> [600, 900]
@@ -32,14 +39,24 @@ import Statistics: norm, dot
     end
 end
 
+"""
+    plot(
+        space::IMASDD.edge_profiles__grid_ggd___space,
+        subset::IMASDD.edge_profiles__grid_ggd___grid_subset,
+    )
+
+Plot the a subset of a space. Defaults to size of [600, 900] and linecolor of :black,
+linewidth of 0.2, and no legend.
+"""
 @recipe function f(
-    space::OMAS.edge_profiles__grid_ggd___space,
-    subset::OMAS.edge_profiles__grid_ggd___grid_subset,
+    space::IMASDD.edge_profiles__grid_ggd___space,
+    subset::IMASDD.edge_profiles__grid_ggd___grid_subset,
 )
     nodes = space.objects_per_dimension[1].object
     edges = space.objects_per_dimension[2].object
     cells = space.objects_per_dimension[3].object
     legend --> false
+    subplot --> 1
     linewidth --> 0.2
     linecolor --> :black
     size --> [600, 900]
@@ -49,8 +66,8 @@ end
     label_assigned = false
     if subset.element[1].object[1].dimension == 3
         for ele ∈ subset.element
-            for bnd_ind ∈ cells[ele.object[1].index].boundary
-                union!(subset_edge_inds, bnd_ind)
+            for bnd ∈ cells[ele.object[1].index].boundary
+                union!(subset_edge_inds, bnd.index)
             end
         end
     elseif subset.element[1].object[1].dimension == 2
@@ -97,13 +114,28 @@ end
     end
 end
 
-@recipe function f(grid_ggd::OMAS.edge_profiles__grid_ggd, prop::OMAS.IDSvectorElement)
-    subset = get_grid_subset_with_index(grid_ggd, prop.grid_subset_index)
+"""
+    plot(
+        grid_ggd::IMASDD.edge_profiles__grid_ggd,
+        prop::IMASDD.IDSvectorElement,
+    )
+
+Plot 2D heatmap of edge_profiles_ggd property on a grid_ggd space object. Defaults to
+size of [635, 900], xaxis of "R / m", yaxis of "Z / m", and no legend. If :seriescolor
+is not provided, :inferno color scheme is used. If :colorbar_title is not provided, the
+property name is used. This function creates a plot with layout [a{0.95w} b] where a
+is the heatmap and b is the colorbar.
+"""
+@recipe function f(
+    grid_ggd::IMASDD.edge_profiles__grid_ggd,
+    prop::IMASDD.IDSvectorElement,
+)
+    subset = get_grid_subset(grid_ggd, prop.grid_subset_index)
     space = grid_ggd.space[subset.element[1].object[1].space]
     nodes = space.objects_per_dimension[1].object
     cells = space.objects_per_dimension[3].object
     legend --> false
-    size --> [600, 900]
+    size --> [635, 900]
     xaxis --> "R / m"
     yaxis --> "Z / m"
     layout := @layout [a{0.95w} b]
@@ -157,9 +189,21 @@ end
     end
 end
 
+"""
+    plot(
+        grid_ggd_arr::AbstractVector{<:IMASDD.edge_profiles__grid_ggd},
+        prop::IMASDD.IDSvectorElement,
+    )
+
+Plot 2D heatmap of edge_profiles_ggd property on a grid_ggd space object. Defaults to
+size of [635, 900], xaxis of "R / m", yaxis of "Z / m", and no legend. If :seriescolor
+is not provided, :inferno color scheme is used. If :colorbar_title is not provided, the
+property name is used. This function creates a plot with layout [a{0.95w} b] where a
+is the heatmap and b is the colorbar.
+"""
 @recipe function f(
-    grid_ggd_arr::Vector{OMAS.edge_profiles__grid_ggd},
-    prop::OMAS.IDSvectorElement,
+    grid_ggd_arr::AbstractVector{<:IMASDD.edge_profiles__grid_ggd},
+    prop::IMASDD.IDSvectorElement,
 )
     found = false
     for grid_ggd ∈ grid_ggd_arr
@@ -177,8 +221,23 @@ end
     end
 end
 
+"""
+    plot(
+        ifo::IMASDD.interferometer,
+    )
+
+Plot all the channels of interferometer object.
+Optional keywords:
+
+  - :plot_type: :los(default), :n_e, or :n_e_average. :los plots the line of sight of
+    the channel in a 2D plot, :n_e plots the integrated n_e along the line of sight vs
+    time, and :n_e_average plots the average n_e vs time.
+  - :mirror: true(default) or false.
+  - :mirror_length: 0.5(default).
+  - :mirror_thickness: 0.1(default).
+"""
 @recipe f(
-    ifo::OMAS.interferometer,
+    ifo::IMASDD.interferometer,
 ) =
     for ch ∈ ifo.channel
         @series begin
@@ -186,8 +245,23 @@ end
         end
     end
 
+"""
+    plot(
+        ifo_ch::IMASDD.interferometer__channel,
+    )
+
+Plot individual channel of interferometer.
+Optional keywords:
+
+  - :plot_type: :los(default), :n_e, or :n_e_average. :los plots the line of sight of
+    the channel in a 2D plot, :n_e plots the integrated n_e along the line of sight vs
+    time, and :n_e_average plots the average n_e vs time.
+  - :mirror: true(default) or false.
+  - :mirror_length: 0.5(default).
+  - :mirror_thickness: 0.1(default).
+"""
 @recipe function f(
-    ifo_ch::OMAS.interferometer__channel,
+    ifo_ch::IMASDD.interferometer__channel,
 )
     if :plot_type ∈ keys(plotattributes)
         plot_type = plotattributes[:plot_type]
@@ -216,16 +290,37 @@ end
     end
 end
 
+"""
+    plot(
+        ifo_ch_los::IMASDD.interferometer__channel___line_of_sight,
+    )
+
+Plot line of sight of a channel of interferometer.
+
+Default plot settings:
+
+  - subplot: 1
+  - size: [600, 900]
+  - xaxis: "R / m"
+  - yaxis: "Z / m"
+
+Optional keywords:
+
+  - :mirror: true(default) or false.
+  - :mirror_length: 0.5(default).
+  - :mirror_thickness: 0.1(default).
+"""
 @recipe function f(
-    ifo_ch_los::OMAS.interferometer__channel___line_of_sight,
+    ifo_ch_los::IMASDD.interferometer__channel___line_of_sight,
 )
+    subplot --> 1
     size --> [600, 900]
     xaxis --> "R / m"
     yaxis --> "Z / m"
     fp = ifo_ch_los.first_point
     sp = ifo_ch_los.second_point
     tp = ifo_ch_los.third_point
-    if tp == OMAS.interferometer__channel___line_of_sight__third_point()
+    if tp == IMASDD.interferometer__channel___line_of_sight__third_point()
         tp = fp
     end
 
@@ -295,16 +390,34 @@ end
     end
 end
 
+"""
+    plot(
+        ifo_ch_n_e_line::IMASDD.interferometer__channel___n_e_line,
+    )
+
+Plot line integrated electron density of a channel of interferometer.
+
+Default plot settings:
+
+  - subplot: 1
+  - xaxis: "time / s"
+  - yaxis: "Integerated n_e / m^-2"
+
+Optional keywords:
+
+  - :average: true or false(default). If true, plot the average n_e vs time.
+"""
 @recipe function f(
-    ifo_ch_n_e_line::OMAS.interferometer__channel___n_e_line,
+    ifo_ch_n_e_line::IMASDD.interferometer__channel___n_e_line,
 )
     if :average ∈ keys(plotattributes)
         @series begin
             ifo_ch.n_e_line_average
         end
     else
+        subplot --> 1
         xaxis --> "time / s"
-        yaxis --> "Integrrated n_e / m^-2"
+        yaxis --> "Integerated n_e / m^-2"
         @series begin
             seriestype := :path
             linewidth --> 2
@@ -313,9 +426,23 @@ end
     end
 end
 
+"""
+    plot(
+        ifo_ch_n_e_line_average::IMASDD.interferometer__channel___n_e_line_average,
+    )
+
+Plot average electron density of a channel of interferometer.
+
+Default plot settings:
+
+  - subplot: 1
+  - xaxis: "time / s"
+  - yaxis: "Average n_e / m^-3"
+"""
 @recipe function f(
-    ifo_ch_n_e_line_average::OMAS.interferometer__channel___n_e_line_average,
+    ifo_ch_n_e_line_average::IMASDD.interferometer__channel___n_e_line_average,
 )
+    subplot --> 1
     xaxis --> "time / s"
     yaxis --> "Average n_e / m^-3"
     @series begin
