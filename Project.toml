@@ -1,7 +1,7 @@
 name = "GGDUtils"
 uuid = "b7b5e640-9b39-4803-84eb-376048795def"
 authors = ["Anchal Gupta <guptaa@fusion.gat.com>"]
-version = "1.0.0"
+version = "1.0.1"
 
 [deps]
 ArgParse = "c7e460c6-2fb9-53a9-8c5b-16f535851c63"
@@ -13,3 +13,14 @@ RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[compat]
+ArgParse = "1"
+ColorSchemes = "3"
+IMASDD = "0.1"
+Interpolations = "0.15"
+NearestNeighbors = "0.4"
+RecipesBase = "1"
+StaticArrays = "1"
+Statistics = "1"
+julia = ">= 1.10"
