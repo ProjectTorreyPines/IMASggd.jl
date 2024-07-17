@@ -19,4 +19,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMPATHELPER_PRIV: ${{ secrets.DOCUMENTER_KEY }}
-        run: julia -e 'using CompatHelper; CompatHelper.main(;master_branch="dev", pr_title_prefix="[ci skip] ")'
+        run: julia -e 'using CompatHelper; CompatHelper.main(;master_branch="dev", use_existing_registries=true)'
