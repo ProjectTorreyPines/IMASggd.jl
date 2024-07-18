@@ -319,6 +319,12 @@ function project_prop_on_subset!(
         return project_prop_on_subset!(prop, from_subset, to_subset)
     elseif from_subset.element[1].object[1].dimension >
            to_subset.element[1].object[1].dimension
+        if length(prop_arr) < 1
+            error(
+                "The property $(strip(repr(prop_arr))) is empty; ",
+                "there are no data available for any subset.",
+            )
+        end
         from_prop =
             get_prop_with_grid_subset_index(prop_arr, from_subset.identifier.index)
         if isnothing(from_prop)
@@ -371,6 +377,12 @@ function project_prop_on_subset!(
     value_field::Symbol=:values,
 ) where {T <: edge_profiles__prop_on_subset}
     from_prop = get_prop_with_grid_subset_index(prop_arr, from_subset.identifier.index)
+    if length(prop_arr) < 1
+        error(
+            "The property $(strip(repr(prop_arr))) is empty; ",
+            "there are no data available for any subset.",
+        )
+    end
     if isnothing(from_prop)
         error(
             "from_subset ($(from_subset.identifier.index)) not represented in the property yet",
