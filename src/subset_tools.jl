@@ -319,10 +319,19 @@ function project_prop_on_subset!(
         return project_prop_on_subset!(prop, from_subset, to_subset)
     elseif from_subset.element[1].object[1].dimension >
            to_subset.element[1].object[1].dimension
+        if length(prop_arr) < 1
+            error(
+                "The property $(strip(repr(prop_arr))) is empty; ",
+                "there are no data available for any subset.",
+            )
+        end
         from_prop =
             get_prop_with_grid_subset_index(prop_arr, from_subset.identifier.index)
         if isnothing(from_prop)
-            error("from_subset not represented in the property yet")
+            error(
+                "from_subset ($(from_subset.identifier.index)) not represented in the ",
+                "property yet",
+            )
         end
         to_subset_centers = get_subset_centers(space, to_subset)
         resize!(prop_arr, length(prop_arr) + 1)
@@ -341,7 +350,10 @@ function project_prop_on_subset!(
         setproperty!(to_prop, value_field, to_prop_values)
         return to_subset_centers, to_prop_values
     else
-        error("to_subset is higher dimensional than from_subset")
+        error(
+            "to_subset ($(to_subset.identifier.index)) is higher dimensional than ",
+            "from_subset ($(from_subset.identifier.index))",
+        )
     end
 end
 
@@ -365,8 +377,16 @@ function project_prop_on_subset!(
     value_field::Symbol=:values,
 ) where {T <: edge_profiles__prop_on_subset}
     from_prop = get_prop_with_grid_subset_index(prop_arr, from_subset.identifier.index)
+    if length(prop_arr) < 1
+        error(
+            "The property $(strip(repr(prop_arr))) is empty; ",
+            "there are no data available for any subset.",
+        )
+    end
     if isnothing(from_prop)
-        error("from_subset not represented in the property yet")
+        error(
+            "from_subset ($(from_subset.identifier.index)) not represented in the property yet",
+        )
     end
     if from_subset.element[1].object[1].dimension ==
        to_subset.element[1].object[1].dimension
@@ -394,12 +414,15 @@ function project_prop_on_subset!(
             to_prop_values = filtered_values
             return to_subset_ele_obj_inds, to_prop_values
         else
-            error("to_subset does not lie entirely inside from_subset. Projection ",
-                "not possible.",
+            error(
+                "to_subset ($(to_subset.identifier.index)) does not lie entirely inside ",
+                "from_subset ($(from_subset.identifier.index)). Projection not possible.",
             )
         end
     else
-        error("Dimensions of from_subset and to_subset do not match. Provide keyword ",
+        error(
+            "Dimensions of from_subset ($(from_subset.identifier.index)) and to_subset ",
+            "($(to_subset.identifier.index)) do not match. Provide keyword ",
             "argument space if you want to project to a smaller dimension as space ",
             "information is required for that. Use\n",
             "project_prop_on_subset!(prop, from_subset, to_subset; space=space)")
