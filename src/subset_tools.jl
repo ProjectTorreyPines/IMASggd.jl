@@ -11,7 +11,7 @@ export get_prop_with_grid_subset_index
 
 """
     add_subset_element!(
-        subset::IMASDD.edge_profiles__grid_ggd___grid_subset,
+        subset::IMASdd.edge_profiles__grid_ggd___grid_subset,
         sn::Int,
         dim::Int,
         index::Int,
@@ -23,7 +23,7 @@ Adds a new element to gird_subset with properties space number (sn), dimension (
 and index (index). The element is added only if the function in_subset returns true.
 """
 function add_subset_element!(
-    subset::IMASDD.edge_profiles__grid_ggd___grid_subset,
+    subset::IMASdd.edge_profiles__grid_ggd___grid_subset,
     sn::Int,
     dim::Int,
     index::Int,
@@ -53,7 +53,7 @@ end
 Overloaded to work differently (faster) with list of indices to be added.
 """
 function add_subset_element!(
-    subset::IMASDD.edge_profiles__grid_ggd___grid_subset,
+    subset::IMASdd.edge_profiles__grid_ggd___grid_subset,
     sn::Int,
     dim::Int,
     index::Vector{Int},
@@ -75,16 +75,16 @@ end
 
 """
     get_subset_space(
-        space::IMASDD.edge_profiles__grid_ggd___space,
-        elements::AbstractVector{<:IMASDD.edge_profiles__grid_ggd___grid_subset___element}
+        space::IMASdd.edge_profiles__grid_ggd___space,
+        elements::AbstractVector{<:IMASdd.edge_profiles__grid_ggd___grid_subset___element}
     )
 
 Returns an array of space object indices corresponding to the correct
 objects_per_dimension (nodes, edges or cells) for the subset elements.
 """
 function get_subset_space(
-    space::IMASDD.edge_profiles__grid_ggd___space,
-    elements::AbstractVector{<:IMASDD.edge_profiles__grid_ggd___grid_subset___element},
+    space::IMASdd.edge_profiles__grid_ggd___space,
+    elements::AbstractVector{<:IMASdd.edge_profiles__grid_ggd___grid_subset___element},
 )
     nD = elements[1].object[1].dimension
     nD_objects = space.objects_per_dimension[nD].object
@@ -93,14 +93,14 @@ end
 
 """
     get_grid_subset(
-        grid_ggd::IMASDD.edge_profiles__grid_ggd,
+        grid_ggd::IMASdd.edge_profiles__grid_ggd,
         grid_subset_index::Int,
     )
 
 Returns the grid_subset in a grid_ggd with the matching grid_subset_index
 """
 function get_grid_subset(
-    grid_ggd::IMASDD.edge_profiles__grid_ggd,
+    grid_ggd::IMASdd.edge_profiles__grid_ggd,
     grid_subset_index::Int,
 )
     for subset ∈ grid_ggd.grid_subset
@@ -114,14 +114,14 @@ end
 
 """
     get_grid_subset(
-        grid_ggd::IMASDD.edge_profiles__grid_ggd,
+        grid_ggd::IMASdd.edge_profiles__grid_ggd,
         grid_subset_name::String,
     )
 
 Returns the grid_subset in a grid_ggd with the matching grid_subset_name
 """
 function get_grid_subset(
-    grid_ggd::IMASDD.edge_profiles__grid_ggd,
+    grid_ggd::IMASdd.edge_profiles__grid_ggd,
     grid_subset_name::String,
 )
     for subset ∈ grid_ggd.grid_subset
@@ -135,8 +135,8 @@ end
 
 """
     get_subset_boundary_inds(
-        space::IMASDD.edge_profiles__grid_ggd___space,
-        subset::IMASDD.edge_profiles__grid_ggd___grid_subset,
+        space::IMASdd.edge_profiles__grid_ggd___space,
+        subset::IMASdd.edge_profiles__grid_ggd___grid_subset,
     )
 
 Returns an array of space object indices corresponding to the boundary of the subset.
@@ -145,8 +145,8 @@ it returns the indices of edges that are the the boundary of a cell subset.
 Returns an empty array if the subset is 1D (nodes).
 """
 function get_subset_boundary_inds(
-    space::IMASDD.edge_profiles__grid_ggd___space,
-    subset::IMASDD.edge_profiles__grid_ggd___grid_subset,
+    space::IMASdd.edge_profiles__grid_ggd___space,
+    subset::IMASdd.edge_profiles__grid_ggd___grid_subset,
 )
     nD = subset.element[1].object[1].dimension
     if nD > 1  # Only 2D (edges) and 3D (cells) subsets have boundaries
@@ -163,18 +163,18 @@ end
 
 """
     get_subset_boundary(
-        space::IMASDD.edge_profiles__grid_ggd___space,
-        subset::IMASDD.edge_profiles__grid_ggd___grid_subset,
+        space::IMASdd.edge_profiles__grid_ggd___space,
+        subset::IMASdd.edge_profiles__grid_ggd___grid_subset,
     )
 
 Returns an array of elements of grid_subset generated from the boundary of the subset
 provided. The dimension of these elments is reduced by 1.
 """
 function get_subset_boundary(
-    space::IMASDD.edge_profiles__grid_ggd___space,
-    subset::IMASDD.edge_profiles__grid_ggd___grid_subset,
+    space::IMASdd.edge_profiles__grid_ggd___space,
+    subset::IMASdd.edge_profiles__grid_ggd___grid_subset,
 )
-    ret_subset = IMASDD.edge_profiles__grid_ggd___grid_subset()
+    ret_subset = IMASdd.edge_profiles__grid_ggd___grid_subset()
     boundary_inds = get_subset_boundary_inds(space, subset)
     bnd_dim = subset.element[1].object[1].dimension - 1
     space_number = subset.element[1].object[1].space
@@ -186,9 +186,9 @@ end
     subset_do(
         set_operator,
         itrs::Vararg{
-            AbstractVector{<:IMASDD.edge_profiles__grid_ggd___grid_subset___element},
+            AbstractVector{<:IMASdd.edge_profiles__grid_ggd___grid_subset___element},
         };
-        space::IMASDD.edge_profiles__grid_ggd___space=IMASDD.edge_profiles__grid_ggd___space(),
+        space::IMASdd.edge_profiles__grid_ggd___space=IMASdd.edge_profiles__grid_ggd___space(),
         use_nodes=false
     )
 
@@ -197,14 +197,14 @@ subset.element to generate a list of elements to go to subset object. If use_nod
 true, the set operation will be applied on the set of nodes from subset.element, space
 argument is required for this.
 Note: that the arguments are subset.element (not the subset itself). Similarly, the
-return object is a list of IMASDD.edge_profiles__grid_ggd___grid_subset___element.
+return object is a list of IMASdd.edge_profiles__grid_ggd___grid_subset___element.
 """
 function subset_do(
     set_operator,
     itrs::Vararg{
-        AbstractVector{<:IMASDD.edge_profiles__grid_ggd___grid_subset___element},
+        AbstractVector{<:IMASdd.edge_profiles__grid_ggd___grid_subset___element},
     };
-    space::IMASDD.edge_profiles__grid_ggd___space=IMASDD.edge_profiles__grid_ggd___space(),
+    space::IMASdd.edge_profiles__grid_ggd___space=IMASdd.edge_profiles__grid_ggd___space(),
     use_nodes=false,
 )
     if use_nodes
@@ -223,7 +223,7 @@ function subset_do(
         )
         dim = itrs[1][1].object[1].dimension
     end
-    ret_subset = IMASDD.edge_profiles__grid_ggd___grid_subset()
+    ret_subset = IMASdd.edge_profiles__grid_ggd___grid_subset()
     space_number = itrs[1][1].object[1].space
     add_subset_element!(ret_subset, space_number, dim, ele_inds)
     return ret_subset.element
@@ -231,16 +231,16 @@ end
 
 """
     get_subset_centers(
-        space::IMASDD.edge_profiles__grid_ggd___space,
-        subset::IMASDD.edge_profiles__grid_ggd___grid_subset,
+        space::IMASdd.edge_profiles__grid_ggd___space,
+        subset::IMASdd.edge_profiles__grid_ggd___grid_subset,
     )
 
 Returns an array of tuples corresponding to (r,z) coordinates of the center of
 cells or the center of edges in the subset space.
 """
 function get_subset_centers(
-    space::IMASDD.edge_profiles__grid_ggd___space,
-    subset::IMASDD.edge_profiles__grid_ggd___grid_subset,
+    space::IMASdd.edge_profiles__grid_ggd___space,
+    subset::IMASdd.edge_profiles__grid_ggd___grid_subset,
 )
     subset_space = get_subset_space(space, subset.element)
     if subset.element[1].object[1].dimension == 1
@@ -256,9 +256,9 @@ end
 """
     project_prop_on_subset!(
         prop_arr::AbstractVector{T},
-        from_subset::IMASDD.edge_profiles__grid_ggd___grid_subset,
-        to_subset::IMASDD.edge_profiles__grid_ggd___grid_subset,
-        space::IMASDD.edge_profiles__grid_ggd___space,
+        from_subset::IMASdd.edge_profiles__grid_ggd___grid_subset,
+        to_subset::IMASdd.edge_profiles__grid_ggd___grid_subset,
+        space::IMASdd.edge_profiles__grid_ggd___space,
         value_field::Symbol=:values;
         TPS_mats::Union{
             Nothing,
@@ -305,9 +305,9 @@ instance
 """
 function project_prop_on_subset!(
     prop_arr::AbstractVector{T},
-    from_subset::IMASDD.edge_profiles__grid_ggd___grid_subset,
-    to_subset::IMASDD.edge_profiles__grid_ggd___grid_subset,
-    space::IMASDD.edge_profiles__grid_ggd___space,
+    from_subset::IMASdd.edge_profiles__grid_ggd___grid_subset,
+    to_subset::IMASdd.edge_profiles__grid_ggd___grid_subset,
+    space::IMASdd.edge_profiles__grid_ggd___space,
     value_field::Symbol=:values;
     TPS_mats::Union{
         Nothing,
@@ -360,8 +360,8 @@ end
 """
     project_prop_on_subset!(
         prop_arr::AbstractVector{T},
-        from_subset::IMASDD.edge_profiles__grid_ggd___grid_subset,
-        to_subset::IMASDD.edge_profiles__grid_ggd___grid_subset,
+        from_subset::IMASdd.edge_profiles__grid_ggd___grid_subset,
+        to_subset::IMASdd.edge_profiles__grid_ggd___grid_subset,
         value_field::Symbol=:values,
     ) where {T <: edge_profiles__prop_on_subset}
 
@@ -372,8 +372,8 @@ elements of to_subset and the values of the property in to_subset.
 """
 function project_prop_on_subset!(
     prop_arr::AbstractVector{T},
-    from_subset::IMASDD.edge_profiles__grid_ggd___grid_subset,
-    to_subset::IMASDD.edge_profiles__grid_ggd___grid_subset,
+    from_subset::IMASdd.edge_profiles__grid_ggd___grid_subset,
+    to_subset::IMASdd.edge_profiles__grid_ggd___grid_subset,
     value_field::Symbol=:values,
 ) where {T <: edge_profiles__prop_on_subset}
     from_prop = get_prop_with_grid_subset_index(prop_arr, from_subset.identifier.index)
@@ -430,31 +430,31 @@ function project_prop_on_subset!(
 end
 
 """
-    deepcopy_subset(subset::IMASDD.edge_profiles__grid_ggd___grid_subset)
+    deepcopy_subset(subset::IMASdd.edge_profiles__grid_ggd___grid_subset)
 
 Faster deepcopy function for grid_subset object. This function is used to create a deep
-copy of a grid_subset object bypassing several checks performed by IMASDD.
+copy of a grid_subset object bypassing several checks performed by IMASdd.
 """
-function deepcopy_subset(subset::IMASDD.edge_profiles__grid_ggd___grid_subset)
-    new_subset = IMASDD.edge_profiles__grid_ggd___grid_subset()
+function deepcopy_subset(subset::IMASdd.edge_profiles__grid_ggd___grid_subset)
+    new_subset = IMASdd.edge_profiles__grid_ggd___grid_subset()
 
     base = getfield(subset, :base)
     new_base = getfield(new_subset, :base)
     resize!(new_base, length(base))
     for (ii, b) ∈ enumerate(base)
-        if !IMASDD.ismissing(b, :jacobian)
+        if !IMASdd.ismissing(b, :jacobian)
             new_base[ii].jacobian = deepcopy(getfield(b, :jacobian))
         end
-        if !IMASDD.ismissing(b, :tensor_contravariant)
+        if !IMASdd.ismissing(b, :tensor_contravariant)
             new_base[ii].tensor_contravariant =
                 deepcopy(getfield(b, :tensor_contravariant))
         end
-        if !IMASDD.ismissing(b, :tensor_covariant)
+        if !IMASdd.ismissing(b, :tensor_covariant)
             new_base[ii].tensor_covariant = deepcopy(getfield(b, :tensor_covariant))
         end
     end
 
-    if !IMASDD.ismissing(subset, :dimension)
+    if !IMASdd.ismissing(subset, :dimension)
         new_subset.dimension = deepcopy(getfield(subset, :dimension))
     end
 
@@ -466,13 +466,13 @@ function deepcopy_subset(subset::IMASDD.edge_profiles__grid_ggd___grid_subset)
         new_object = getfield(new_element[ii], :object)
         resize!(new_object, length(object))
         for (jj, obj) ∈ enumerate(object)
-            if !IMASDD.ismissing(obj, :dimension)
+            if !IMASdd.ismissing(obj, :dimension)
                 new_object[jj].dimension = deepcopy(getfield(obj, :dimension))
             end
-            if !IMASDD.ismissing(obj, :index)
+            if !IMASdd.ismissing(obj, :index)
                 new_object[jj].index = deepcopy(getfield(obj, :index))
             end
-            if !IMASDD.ismissing(obj, :space)
+            if !IMASdd.ismissing(obj, :space)
                 new_object[jj].space = deepcopy(getfield(obj, :space))
             end
         end
@@ -480,26 +480,26 @@ function deepcopy_subset(subset::IMASDD.edge_profiles__grid_ggd___grid_subset)
 
     identifier = getfield(subset, :identifier)
     new_identifier = getfield(new_subset, :identifier)
-    if !IMASDD.ismissing(identifier, :index)
+    if !IMASdd.ismissing(identifier, :index)
         new_identifier.index = deepcopy(getfield(identifier, :index))
     end
-    if !IMASDD.ismissing(identifier, :name)
+    if !IMASdd.ismissing(identifier, :name)
         new_identifier.name = deepcopy(getfield(identifier, :name))
     end
-    if !IMASDD.ismissing(identifier, :description)
+    if !IMASdd.ismissing(identifier, :description)
         new_identifier.description = deepcopy(getfield(identifier, :description))
     end
 
     metric = getfield(subset, :metric)
     new_metric = getfield(new_subset, :metric)
-    if !IMASDD.ismissing(metric, :jacobian)
+    if !IMASdd.ismissing(metric, :jacobian)
         new_metric.jacobian = deepcopy(getfield(metric, :jacobian))
     end
-    if !IMASDD.ismissing(metric, :tensor_contravariant)
+    if !IMASdd.ismissing(metric, :tensor_contravariant)
         new_metric.tensor_contravariant =
             deepcopy(getfield(metric, :tensor_contravariant))
     end
-    if !IMASDD.ismissing(metric, :tensor_covariant)
+    if !IMASdd.ismissing(metric, :tensor_covariant)
         new_metric.tensor_covariant = deepcopy(getfield(metric, :tensor_covariant))
     end
     return new_subset
@@ -509,8 +509,8 @@ end
     Base.:∈(
         point::Tuple{Real, Real},
         subset_of_space::Tuple{
-            IMASDD.edge_profiles__grid_ggd___grid_subset,
-            IMASDD.edge_profiles__grid_ggd___space,
+            IMASdd.edge_profiles__grid_ggd___grid_subset,
+            IMASdd.edge_profiles__grid_ggd___space,
         },
     )
 
@@ -535,8 +535,8 @@ end
 function Base.:∈(
     point::Tuple{Real, Real},
     subset_of_space::Tuple{
-        IMASDD.edge_profiles__grid_ggd___grid_subset,
-        IMASDD.edge_profiles__grid_ggd___space,
+        IMASdd.edge_profiles__grid_ggd___grid_subset,
+        IMASdd.edge_profiles__grid_ggd___space,
     },
 )
     r, z = point
@@ -546,7 +546,7 @@ function Base.:∈(
     nodes = getfield(opd[1], :object)
     edges = getfield(opd[2], :object)
     if dim == 3
-        subset_bnd = IMASDD.edge_profiles__grid_ggd___grid_subset()
+        subset_bnd = IMASdd.edge_profiles__grid_ggd___grid_subset()
         subset_bnd.element = get_subset_boundary(space, subset)
     elseif dim == 2
         subset_bnd = subset

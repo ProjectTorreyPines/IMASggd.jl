@@ -1,12 +1,12 @@
-import GGDUtils: interp, get_kdtree, project_prop_on_subset!, get_grid_subset, IMASDD
+import GGDUtils: interp, get_kdtree, project_prop_on_subset!, get_grid_subset, IMASdd
 
 println("-----------------------------------------------------------------------------")
 print("json2imas() time with compilation: ")
-@time ids = IMASDD.json2imas(
+@time ids = IMASdd.json2imas(
     "$(@__DIR__)/../samples/time_dep_edge_profiles_last_step_only.json",
 )
 print("json2imas() time (true runtime): ")
-@time ids = IMASDD.json2imas(
+@time ids = IMASdd.json2imas(
     "$(@__DIR__)/../samples/time_dep_edge_profiles_last_step_only.json",
 )
 

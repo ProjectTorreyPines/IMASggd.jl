@@ -53,13 +53,13 @@ get_types_with
 
 Several plot recipes have been defined for easy visualization.
 ```@docs
-RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::GGDUtils.IMASDD.edge_profiles__grid_ggd___space)
-RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::GGDUtils.IMASDD.edge_profiles__grid_ggd___space, ::GGDUtils.IMASDD.edge_profiles__grid_ggd___grid_subset)
-RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::GGDUtils.IMASDD.edge_profiles__grid_ggd, ::GGDUtils.IMASDD.IDSvectorElement)
-RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::AbstractVector{<:GGDUtils.IMASDD.edge_profiles__grid_ggd}, ::GGDUtils.IMASDD.IDSvectorElement)
-RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::GGDUtils.IMASDD.interferometer)
-RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::GGDUtils.IMASDD.interferometer__channel)
-RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::GGDUtils.IMASDD.interferometer__channel___line_of_sight)
-RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::GGDUtils.IMASDD.interferometer__channel___n_e_line)
-RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::GGDUtils.IMASDD.interferometer__channel___n_e_line_average)
+RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::GGDUtils.IMASdd.edge_profiles__grid_ggd___space)
+RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::GGDUtils.IMASdd.edge_profiles__grid_ggd___space, ::GGDUtils.IMASdd.edge_profiles__grid_ggd___grid_subset)
+RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::GGDUtils.IMASdd.edge_profiles__grid_ggd, ::GGDUtils.IMASdd.IDSvectorElement)
+RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::AbstractVector{<:GGDUtils.IMASdd.edge_profiles__grid_ggd}, ::GGDUtils.IMASdd.IDSvectorElement)
+RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::GGDUtils.IMASdd.interferometer)
+RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::GGDUtils.IMASdd.interferometer__channel)
+RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::GGDUtils.IMASdd.interferometer__channel___line_of_sight)
+RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::GGDUtils.IMASdd.interferometer__channel___n_e_line)
+RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::GGDUtils.IMASdd.interferometer__channel___n_e_line_average)
 ```
