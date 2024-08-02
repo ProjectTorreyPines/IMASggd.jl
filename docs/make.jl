@@ -18,6 +18,6 @@ deploydocs(;
     repo="github.com/ProjectTorreyPines/GGDUtils.jl.git",
     target="build",
     branch="gh-pages",
-    devbranch="dev",
+    devbranch="master",
     versions=["stable" => "v^", "v#.#"],
 )
