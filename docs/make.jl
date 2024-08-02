@@ -1,6 +1,6 @@
 # using Pkg
 # Pkg.add("Documenter")
-# Pkg.add(; url="https://github.com/ProjectTorreyPines/IMASDD.jl.git");
+# Pkg.add(; url="https://github.com/ProjectTorreyPines/IMASdd.jl.git");
 # Pkg.develop(PackageSpec(; path="../"));
 # Pkg.instantiate()
 using Documenter

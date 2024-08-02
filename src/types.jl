@@ -10,7 +10,7 @@ have a particular field present in it.
 Example:
 
 ```julia
-get_types_with(IMASDD.edge_profiles, :grid_subset_index)
+get_types_with(IMASdd.edge_profiles, :grid_subset_index)
 ```
 
 returns all edge_profiles types that have a subfield named grid_subset_index.
@@ -41,4 +41,4 @@ function get_types_with(parent::Type, field::Symbol)
 end
 
 edge_profiles__prop_on_subset =
-    Union{get_types_with(IMASDD.edge_profiles, :grid_subset_index)...}
+    Union{get_types_with(IMASdd.edge_profiles, :grid_subset_index)...}
