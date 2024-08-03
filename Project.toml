@@ -17,6 +17,7 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 [compat]
 ArgParse = "1"
 ColorSchemes = "3"
+IMASdd = "2"
 Interpolations = "0.15"
 NearestNeighbors = "0.4"
 RecipesBase = "1"
