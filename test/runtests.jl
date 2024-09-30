@@ -1,4 +1,4 @@
-import GGDUtils: interp, get_kdtree, project_prop_on_subset!, get_grid_subset
+import IMASggd: interp, get_kdtree, project_prop_on_subset!, get_grid_subset
 using IMASdd: IMASdd
 import Statistics: mean
 using Test

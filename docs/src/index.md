@@ -1,5 +1,5 @@
 
-# GGDUtils.jl 
+# IMASggd.jl 
 
 ```@contents
 Pages = ["index.md"]
@@ -8,13 +8,13 @@ Depth = 5
 
 ## Installation
 
-GGDUtils is registered with public repository [FuseRegistry](https://github.com/ProjectTorreyPines/FuseRegistry.jl/). For installation:
+IMASggd is registered with public repository [FuseRegistry](https://github.com/ProjectTorreyPines/FuseRegistry.jl/). For installation:
 
 ```
 using Pkg
 Pkg.Registry.add(RegistrySpec(url="https://github.com/ProjectTorreyPines/FuseRegistry.jl.git"))
 Pkg.Registry.add("General")
-Pkg.add("GGDUtils)
+Pkg.add("IMASggd)
 ```
 
 ## Interpolations
@@ -53,13 +53,13 @@ get_types_with
 
 Several plot recipes have been defined for easy visualization.
 ```@docs
-RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::GGDUtils.IMASdd.edge_profiles__grid_ggd___space)
-RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::GGDUtils.IMASdd.edge_profiles__grid_ggd___space, ::GGDUtils.IMASdd.edge_profiles__grid_ggd___grid_subset)
-RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::GGDUtils.IMASdd.edge_profiles__grid_ggd, ::GGDUtils.IMASdd.IDSvectorElement)
-RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::AbstractVector{<:GGDUtils.IMASdd.edge_profiles__grid_ggd}, ::GGDUtils.IMASdd.IDSvectorElement)
-RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::GGDUtils.IMASdd.interferometer)
-RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::GGDUtils.IMASdd.interferometer__channel)
-RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::GGDUtils.IMASdd.interferometer__channel___line_of_sight)
-RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::GGDUtils.IMASdd.interferometer__channel___n_e_line)
-RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::GGDUtils.IMASdd.interferometer__channel___n_e_line_average)
+RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::IMASggd.IMASdd.edge_profiles__grid_ggd___space)
+RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::IMASggd.IMASdd.edge_profiles__grid_ggd___space, ::IMASggd.IMASdd.edge_profiles__grid_ggd___grid_subset)
+RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::IMASggd.IMASdd.edge_profiles__grid_ggd, ::IMASggd.IMASdd.IDSvectorElement)
+RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::AbstractVector{<:IMASggd.IMASdd.edge_profiles__grid_ggd}, ::IMASggd.IMASdd.IDSvectorElement)
+RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::IMASggd.IMASdd.interferometer)
+RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::IMASggd.IMASdd.interferometer__channel)
+RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::IMASggd.IMASdd.interferometer__channel___line_of_sight)
+RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::IMASggd.IMASdd.interferometer__channel___n_e_line)
+RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::IMASggd.IMASdd.interferometer__channel___n_e_line_average)
 ```

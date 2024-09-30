@@ -1,4 +1,4 @@
-module GGDUtils
+module IMASggd
 
 using IMASdd: IMASdd
 
@@ -12,4 +12,4 @@ include("interpolations.jl")
 
 include("recipes.jl")
 
-end # module GGDUtils
+end # module IMASggd

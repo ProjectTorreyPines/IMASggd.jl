@@ -4,18 +4,18 @@
 # Pkg.develop(PackageSpec(; path="../"));
 # Pkg.instantiate()
 using Documenter
-using GGDUtils
+using IMASggd
 using RecipesBase: RecipesBase
 
 makedocs(;
-    modules=[GGDUtils],
+    modules=[IMASggd],
     format=Documenter.HTML(),
-    sitename="GGDUtils",
+    sitename="IMASggd",
     checkdocs=:none,
 )
 
 deploydocs(;
-    repo="github.com/ProjectTorreyPines/GGDUtils.jl.git",
+    repo="github.com/ProjectTorreyPines/IMASggd.jl.git",
     target="build",
     branch="gh-pages",
     devbranch="master",

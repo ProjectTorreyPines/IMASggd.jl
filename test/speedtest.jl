@@ -1,4 +1,4 @@
-import GGDUtils: interp, get_kdtree, project_prop_on_subset!, get_grid_subset, IMASdd
+import IMASggd: interp, get_kdtree, project_prop_on_subset!, get_grid_subset, IMASdd
 
 println("-----------------------------------------------------------------------------")
 print("json2imas() time with compilation: ")
@@ -20,7 +20,7 @@ print("interp(prop, grid_ggd) (true runtime): ")
 @time get_n_e = interp(n_e, grid_ggd)
 
 println("-----------------------------------------------------------------------------")
-subset = get_grid_subset(grid_ggd, 5)
+subset = get_grid_subset(grid_ggd, -5)
 
 print("interp(prop_arr, space, subset) time with compilation: ")
 @time get_n_e = interp(ids.edge_profiles.ggd[1].electrons.density, space, subset)
@@ -29,9 +29,9 @@ print("interp(prop_arr, space, subset) time (true runtime): ")
 
 println("-----------------------------------------------------------------------------")
 print("interp(prop_arr, grid_ggd, grid_subset_index) time with compilation: ")
-@time get_n_e = interp(ids.edge_profiles.ggd[1].electrons.density, grid_ggd, 5)
+@time get_n_e = interp(ids.edge_profiles.ggd[1].electrons.density, grid_ggd, -5)
 print("interp(prop_arr, grid_ggd, grid_subset_index) time (true runtime): ")
-@time get_n_e = interp(ids.edge_profiles.ggd[1].electrons.density, grid_ggd, 5)
+@time get_n_e = interp(ids.edge_profiles.ggd[1].electrons.density, grid_ggd, -5)
 
 println("-----------------------------------------------------------------------------")
 kdtree = get_kdtree(space)
@@ -43,7 +43,7 @@ print("interp(prop_arr, kdtree) time (true runtime): ")
 println("-----------------------------------------------------------------------------")
 prop = ids.edge_profiles.ggd[1].electrons.density
 # All cells
-from_subset = get_grid_subset(ids.edge_profiles.grid_ggd[1], 5)
+from_subset = get_grid_subset(ids.edge_profiles.grid_ggd[1], -5)
 # separatix
 to_subset = get_grid_subset(ids.edge_profiles.grid_ggd[1], 16)
 print(
