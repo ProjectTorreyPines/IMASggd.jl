@@ -1,7 +1,7 @@
 name = "IMASggd"
 uuid = "b7b5e640-9b39-4803-84eb-376048795def"
 authors = ["Anchal Gupta <guptaa@fusion.gat.com>"]
-version = "2.0.0"
+version = "2.0.1"
 
 [deps]
 ArgParse = "c7e460c6-2fb9-53a9-8c5b-16f535851c63"
@@ -17,7 +17,7 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 [compat]
 ArgParse = "1"
 ColorSchemes = "3"
-IMASdd = "2"
+IMASdd = "2, 3"
 Interpolations = "0.15"
 NearestNeighbors = "0.4"
 RecipesBase = "1"
