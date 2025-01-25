@@ -22,7 +22,7 @@ function get_types_with(parent::Type, field::Symbol)
     ret = Type[]
     for f ∈ fieldnames(parent)
         T = typeof(getfield(parent(), f))
-        if T <: AbstractArray
+        if T <: AbstractArray || T <: Tuple
             eT = eltype(T)
             if field ∈ fieldnames(eT)
                 append!(ret, [eT])
