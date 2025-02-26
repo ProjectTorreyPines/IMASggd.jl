@@ -3,12 +3,12 @@ using ColorSchemes: ColorSchemes
 import Statistics: norm, dot
 
 """
-    plot(space::IMASdd.edge_profiles__grid_ggd___space)
+    plot(space::all__space)
 
 Plot the grid_ggd space object. Defaults to size of [600, 900] and linecolor of :black,
 linewidth of 0.2, and no legend.
 """
-@recipe function f(space::IMASdd.edge_profiles__grid_ggd___space)
+@recipe function f(space::all__space)
     nodes = space.objects_per_dimension[1].object
     edges = space.objects_per_dimension[2].object
     legend --> false
@@ -40,18 +40,12 @@ linewidth of 0.2, and no legend.
 end
 
 """
-    plot(
-        space::IMASdd.edge_profiles__grid_ggd___space,
-        subset::IMASdd.edge_profiles__grid_ggd___grid_subset,
-    )
+    plot(space::all__space, subset::all__grid_subset)
 
 Plot the a subset of a space. Defaults to size of [600, 900] and linecolor of :black,
 linewidth of 0.2, and no legend.
 """
-@recipe function f(
-    space::IMASdd.edge_profiles__grid_ggd___space,
-    subset::IMASdd.edge_profiles__grid_ggd___grid_subset,
-)
+@recipe function f(space::all__space, subset::all__grid_subset)
     nodes = space.objects_per_dimension[1].object
     edges = space.objects_per_dimension[2].object
     cells = space.objects_per_dimension[3].object
@@ -115,10 +109,7 @@ linewidth of 0.2, and no legend.
 end
 
 """
-    plot(
-        grid_ggd::IMASdd.edge_profiles__grid_ggd,
-        prop::IMASdd.IDSvectorElement,
-    )
+    plot(grid_ggd::all__grid_ggd, prop::all__grid_subset_prop)
 
 Plot 2D heatmap of edge_profiles_ggd property on a grid_ggd space object. Defaults to
 size of [635, 900], xaxis of "R / m", yaxis of "Z / m", and no legend. If :seriescolor
@@ -126,10 +117,7 @@ is not provided, :inferno color scheme is used. If :colorbar_title is not provid
 property name is used. This function creates a plot with layout [a{0.95w} b] where a
 is the heatmap and b is the colorbar.
 """
-@recipe function f(
-    grid_ggd::IMASdd.edge_profiles__grid_ggd,
-    prop::IMASdd.IDSvectorElement,
-)
+@recipe function f(grid_ggd::all__grid_ggd, prop::all__grid_subset_prop)
     subset = get_grid_subset(grid_ggd, prop.grid_subset_index)
     space = grid_ggd.space[subset.element[1].object[1].space]
     nodes = space.objects_per_dimension[1].object
@@ -190,10 +178,7 @@ is the heatmap and b is the colorbar.
 end
 
 """
-    plot(
-        grid_ggd_arr::AbstractVector{<:IMASdd.edge_profiles__grid_ggd},
-        prop::IMASdd.IDSvectorElement,
-    )
+    plot(grid_ggd_arr::AbstractVector{<:all__grid_ggd}, prop::all__grid_subset_prop)
 
 Plot 2D heatmap of edge_profiles_ggd property on a grid_ggd space object. Defaults to
 size of [635, 900], xaxis of "R / m", yaxis of "Z / m", and no legend. If :seriescolor
@@ -202,8 +187,8 @@ property name is used. This function creates a plot with layout [a{0.95w} b] whe
 is the heatmap and b is the colorbar.
 """
 @recipe function f(
-    grid_ggd_arr::AbstractVector{<:IMASdd.edge_profiles__grid_ggd},
-    prop::IMASdd.IDSvectorElement,
+    grid_ggd_arr::AbstractVector{<:all__grid_ggd},
+    prop::all__grid_subset_prop,
 )
     found = false
     for grid_ggd ∈ grid_ggd_arr
@@ -222,9 +207,7 @@ is the heatmap and b is the colorbar.
 end
 
 """
-    plot(
-        ifo::IMASdd.interferometer,
-    )
+    plot(ifo::IMASdd.interferometer)
 
 Plot all the channels of interferometer object.
 Optional keywords:
@@ -246,9 +229,7 @@ Optional keywords:
     end
 
 """
-    plot(
-        ifo_ch::IMASdd.interferometer__channel,
-    )
+    plot(ifo_ch::IMASdd.interferometer__channel)
 
 Plot individual channel of interferometer.
 Optional keywords:
@@ -260,9 +241,7 @@ Optional keywords:
   - :mirror_length: 0.5(default).
   - :mirror_thickness: 0.1(default).
 """
-@recipe function f(
-    ifo_ch::IMASdd.interferometer__channel,
-)
+@recipe function f(ifo_ch::IMASdd.interferometer__channel)
     if :plot_type ∈ keys(plotattributes)
         plot_type = plotattributes[:plot_type]
     else
@@ -291,9 +270,7 @@ Optional keywords:
 end
 
 """
-    plot(
-        ifo_ch_los::IMASdd.interferometer__channel___line_of_sight,
-    )
+    plot(ifo_ch_los::IMASdd.interferometer__channel___line_of_sight)
 
 Plot line of sight of a channel of interferometer.
 
@@ -310,9 +287,7 @@ Optional keywords:
   - :mirror_length: 0.5(default).
   - :mirror_thickness: 0.1(default).
 """
-@recipe function f(
-    ifo_ch_los::IMASdd.interferometer__channel___line_of_sight,
-)
+@recipe function f(ifo_ch_los::IMASdd.interferometer__channel___line_of_sight)
     subplot --> 1
     size --> [600, 900]
     xaxis --> "R / m"
@@ -391,9 +366,7 @@ Optional keywords:
 end
 
 """
-    plot(
-        ifo_ch_n_e_line::IMASdd.interferometer__channel___n_e_line,
-    )
+    plot(ifo_ch_n_e_line::IMASdd.interferometer__channel___n_e_line)
 
 Plot line integrated electron density of a channel of interferometer.
 
@@ -407,9 +380,7 @@ Optional keywords:
 
   - :average: true or false(default). If true, plot the average n_e vs time.
 """
-@recipe function f(
-    ifo_ch_n_e_line::IMASdd.interferometer__channel___n_e_line,
-)
+@recipe function f(ifo_ch_n_e_line::IMASdd.interferometer__channel___n_e_line)
     if :average ∈ keys(plotattributes)
         @series begin
             ifo_ch.n_e_line_average
@@ -427,9 +398,7 @@ Optional keywords:
 end
 
 """
-    plot(
-        ifo_ch_n_e_line_average::IMASdd.interferometer__channel___n_e_line_average,
-    )
+    plot(ifo_ch_n_e_line_average::IMASdd.interferometer__channel___n_e_line_average)
 
 Plot average electron density of a channel of interferometer.
 
