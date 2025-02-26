@@ -3,6 +3,8 @@ export get_subset_space
 export get_grid_subset
 export get_subset_boundary_inds
 export get_subset_boundary
+export get_grid_ggd
+export get_space
 export subset_do
 export get_subset_centers
 export project_prop_on_subset!
@@ -163,25 +165,42 @@ function get_subset_boundary(
 end
 
 """
+    get_grid_ggd(subset::Union{all__grid_subset, all__space})::all__grid_ggd
+
+Get the parent grid_ggd of a `grid_subset` or `space` object.
+"""
+function get_grid_ggd(subset::Union{all__grid_subset, all__space})::all__grid_ggd
+    return getfield(getfield(subset, :_parent).value, :_parent).value
+end
+
+"""
+    get_space_from_subset(subset::all__grid_subset)::all__space
+
+Get the corresponding space in parent grid_ggd for a grid_subset object.
+"""
+function get_space(subset::all__grid_subset)::all__space
+    grid_ggd = get_grid_ggd(subset)
+    return grid_ggd.space[subset.element[1].object[1].space]
+end
+
+"""
     subset_do(
         set_operator,
         itrs::Vararg{all__grid_subset};
-        space::all__space,
         use_nodes=false,
     )::all__grid_subset
 
 Function to perform any set operation (intersect, union, setdiff etc.) on
 subset.element to generate a list of elements to go to subset object. If use_nodes is
-true, the set operation will be applied on the set of nodes from subset.element, space
-argument is required for this.
+true, the set operation will be applied on the set of nodes from subset.element.
 """
 function subset_do(
     set_operator,
     itrs::Vararg{all__grid_subset};
-    space::all__space,
     use_nodes=false,
 )::all__grid_subset
     if use_nodes
+        space = get_space(itrs[1])
         ele_inds = set_operator(
             [
                 union([
@@ -195,10 +214,10 @@ function subset_do(
         ele_inds = set_operator(
             [[ele.object[1].index for ele ∈ subset.element] for subset ∈ itrs]...,
         )
-        dim = itrs[1][1].object[1].dimension
+        dim = itrs[1].element[1].object[1].dimension
     end
-    ret_subset = typeof(itrs[1][1])()
-    space_number = itrs[1][1].object[1].space
+    ret_subset = typeof(itrs[1])()
+    space_number = itrs[1].element[1].object[1].space
     add_subset_element!(ret_subset, space_number, dim, ele_inds)
     return ret_subset
 end
@@ -404,7 +423,7 @@ Faster deepcopy function for grid_subset object. This function is used to create
 copy of a grid_subset object bypassing several checks performed by IMASdd.
 """
 function deepcopy_subset(subset::all__grid_subset)::all__grid_subset
-    new_subset = all__grid_subset()
+    new_subset = typeof(subset)()
 
     base = getfield(subset, :base)
     new_base = getfield(new_subset, :base)

@@ -35,6 +35,8 @@ get_subset_space
 get_grid_subset
 get_subset_boundary_inds
 get_subset_boundary
+get_grid_ggd
+get_space
 subset_do
 get_subset_centers
 project_prop_on_subset!
