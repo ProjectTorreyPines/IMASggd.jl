@@ -8,11 +8,11 @@ export get_kdtree
 export get_TPS_mats
 
 """
-    get_kdtree(space::IMASdd.edge_profiles__grid_ggd___space)
+    get_kdtree(space::all__space)
 
 Get a KDTree for all the cells in the space for search for nearest neighbours.
 """
-function get_kdtree(space::IMASdd.edge_profiles__grid_ggd___space)
+function get_kdtree(space::all__space)
     grid_nodes = space.objects_per_dimension[1].object
     grid_faces = space.objects_per_dimension[3].object
     grid_faces = [cell for cell ∈ grid_faces if length(cell.nodes) == 4]
@@ -25,15 +25,15 @@ end
 
 """
     get_kdtree(
-        space::IMASdd.edge_profiles__grid_ggd___space,
-        subset::IMASdd.edge_profiles__grid_ggd___grid_subset,
+        space::all__space,
+        subset::all__grid_subset,
     )
 
 Get a KDTree for a subset of the space for search for nearest neighbours.
 """
 function get_kdtree(
-    space::IMASdd.edge_profiles__grid_ggd___space,
-    subset::IMASdd.edge_profiles__grid_ggd___grid_subset,
+    space::all__space,
+    subset::all__grid_subset,
 )
     subset_centers = get_subset_centers(space, subset)
     return KDTree([SVector{2}(sc) for sc ∈ subset_centers]; leafsize=10)
@@ -178,7 +178,7 @@ function interp(y::Vector{T}, x::Vector{Tuple{U, U}}) where {T <: Real, U <: Rea
     return interp(y, get_TPS_mats(x))
 end
 
-function get_TPS_mats(space::IMASdd.edge_profiles__grid_ggd___space)
+function get_TPS_mats(space::all__space)
     nodes = [Tuple(node.geometry) for node ∈ space.objects_per_dimension[1].object]
     return get_TPS_mats(nodes)
 end
@@ -186,7 +186,7 @@ end
 """
     interp(
         prop_values::Vector{T},
-        space::IMASdd.edge_profiles__grid_ggd___space
+        space::all__space
     ) where {T <: Real}
 
 If the whole space is provided instead of a kdtree, calculate the kdtree for whole
@@ -195,14 +195,14 @@ of the space.
 """
 function interp(
     prop_values::Vector{T},
-    space::IMASdd.edge_profiles__grid_ggd___space,
+    space::all__space,
 ) where {T <: Real}
     return interp(prop_values, get_TPS_mats(space))
 end
 
 function get_TPS_mats(
-    space::IMASdd.edge_profiles__grid_ggd___space,
-    subset::IMASdd.edge_profiles__grid_ggd___grid_subset,
+    space::all__space,
+    subset::all__grid_subset,
 )
     return get_TPS_mats(get_subset_centers(space, subset))
 end
@@ -210,8 +210,8 @@ end
 """
     interp(
         prop_values::Vector{Real},
-        space::IMASdd.edge_profiles__grid_ggd___space,
-        subset::IMASdd.edge_profiles__grid_ggd___grid_subset
+        space::all__space,
+        subset::all__grid_subset
     )
 
 If a subset of the space is provided, calculate the kdtree for the subset. In this case
@@ -219,16 +219,16 @@ it is assumed that the property values are provided for each element of the subs
 """
 function interp(
     prop_values::Vector{T},
-    space::IMASdd.edge_profiles__grid_ggd___space,
-    subset::IMASdd.edge_profiles__grid_ggd___grid_subset,
+    space::all__space,
+    subset::all__grid_subset,
 ) where {T <: Real}
     return interp(prop_values, get_TPS_mats(space, subset))
 end
 
 """
     interp(
-        prop::edge_profiles__prop_on_subset,
-        grid_ggd::IMASdd.edge_profiles__grid_ggd,
+        prop::all__grid_subset_prop,
+        grid_ggd::all__grid_ggd,
         value_field::Symbol=:values
     )
 
@@ -241,8 +241,8 @@ get_e_field_par = interp(dd.edge_profiles.ggd[1].e_field[1], grid_ggd, :parallel
 ```
 """
 function interp(
-    prop::edge_profiles__prop_on_subset,
-    grid_ggd::IMASdd.edge_profiles__grid_ggd,
+    prop::all__grid_subset_prop,
+    grid_ggd::all__grid_ggd,
     value_field::Symbol=:values,
 )
     subset = get_grid_subset(grid_ggd, prop.grid_subset_index)
@@ -253,10 +253,10 @@ end
 """
     interp(
         prop_arr::AbstractVector{T},
-        space::IMASdd.edge_profiles__grid_ggd___space,
-        subset::IMASdd.edge_profiles__grid_ggd___grid_subset,
+        space::all__space,
+        subset::all__grid_subset,
         value_field::Symbol=:values
-    ) where {T <: edge_profiles__prop_on_subset}
+    ) where {T <: all__grid_subset_prop}
 
 Example:
 
@@ -267,10 +267,10 @@ get_electron_density = interp(dd.edge_profiles.ggd[1].electrons.density, space, 
 """
 function interp(
     prop_arr::AbstractVector{T},
-    space::IMASdd.edge_profiles__grid_ggd___space,
-    subset::IMASdd.edge_profiles__grid_ggd___grid_subset,
+    space::all__space,
+    subset::all__grid_subset,
     value_field::Symbol=:values,
-) where {T <: edge_profiles__prop_on_subset}
+) where {T <: all__grid_subset_prop}
     prop = get_prop_with_grid_subset_index(prop_arr, subset.identifier.index)
     return interp(getfield(prop, value_field), space, subset)
 end
@@ -278,10 +278,10 @@ end
 """
     interp(
         prop_arr::AbstractVector{T},
-        grid_ggd::IMASdd.edge_profiles__grid_ggd,
+        grid_ggd::all__grid_ggd,
         grid_subset_index::Int,
         value_field::Symbol=:values
-    ) where {T <: edge_profiles__prop_on_subset}
+    ) where {T <: all__grid_subset_prop}
 
 Example:
 
@@ -291,17 +291,17 @@ get_n_e_sep = interp(dd.edge_profiles.ggd[1].electrons.density, grid_ggd, 16)
 """
 function interp(
     prop_arr::AbstractVector{T},
-    grid_ggd::IMASdd.edge_profiles__grid_ggd,
+    grid_ggd::all__grid_ggd,
     grid_subset_index::Int,
     value_field::Symbol=:values,
-) where {T <: edge_profiles__prop_on_subset}
+) where {T <: all__grid_subset_prop}
     prop = get_prop_with_grid_subset_index(prop_arr, grid_subset_index)
     subset = get_grid_subset(grid_ggd, grid_subset_index)
     space = grid_ggd.space[subset.element[1].object[1].space]
     return interp(getfield(prop, value_field), space, subset)
 end
 
-function get_TPS_mats(grid_ggd::IMASdd.edge_profiles__grid_ggd, grid_subset_index::Int)
+function get_TPS_mats(grid_ggd::all__grid_ggd, grid_subset_index::Int)
     subset = get_grid_subset(grid_ggd, grid_subset_index)
     space = grid_ggd.space[subset.element[1].object[1].space]
     return get_TPS_mats(space, subset)
@@ -313,7 +313,7 @@ end
         TPS_mats::Tuple{Matrix{U}, Matrix{U}, Matrix{U}, Vector{Tuple{U, U}}},
         grid_subset_index::Int,
         value_field::Val{V}=Val(:values),
-    ) where {T <: edge_profiles__prop_on_subset, U <: Real, V}
+    ) where {T <: all__grid_subset_prop, U <: Real, V}
 
 Same use case as above but allows one to reuse previously calculated TPS matrices.
 
@@ -335,7 +335,7 @@ function interp(
     TPS_mats::Tuple{Matrix{U}, Matrix{U}, Matrix{U}, Vector{Tuple{U, U}}},
     grid_subset_index::Int,
     value_field::Val{V}=Val(:values),
-) where {T <: edge_profiles__prop_on_subset, U <: Real, V}
+) where {T <: all__grid_subset_prop, U <: Real, V}
     prop = get_prop_with_grid_subset_index(prop_arr, grid_subset_index)
     field = getfield(prop, V)
     return interp(field, TPS_mats)

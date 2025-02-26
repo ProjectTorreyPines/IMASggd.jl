@@ -49,14 +49,24 @@ get_prop_with_grid_subset_index
 get_types_with
 ```
 
+This function has been used to create following types that are used in this module and
+can be imported for further use.
+
+```@docs
+IMASggd.all__grid_ggd
+IMASggd.all__space
+IMASggd.all__grid_subset
+IMASggd.all__grid_subset_prop
+```
+
 ## Plot recipes
 
 Several plot recipes have been defined for easy visualization.
 ```@docs
-RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::IMASggd.IMASdd.edge_profiles__grid_ggd___space)
-RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::IMASggd.IMASdd.edge_profiles__grid_ggd___space, ::IMASggd.IMASdd.edge_profiles__grid_ggd___grid_subset)
-RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::IMASggd.IMASdd.edge_profiles__grid_ggd, ::IMASggd.IMASdd.IDSvectorElement)
-RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::AbstractVector{<:IMASggd.IMASdd.edge_profiles__grid_ggd}, ::IMASggd.IMASdd.IDSvectorElement)
+RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::IMASggd.all__space)
+RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::IMASggd.all__space, ::IMASggd.all__grid_subset)
+RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::IMASggd.all__grid_ggd, ::IMASggd.all__grid_subset_prop)
+RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::AbstractVector{<:IMASggd.all__grid_ggd}, ::IMASggd.all__grid_subset_prop)
 RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::IMASggd.IMASdd.interferometer)
 RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::IMASggd.IMASdd.interferometer__channel)
 RecipesBase.apply_recipe(::Dict{Symbol,Any}, ::IMASggd.IMASdd.interferometer__channel___line_of_sight)
