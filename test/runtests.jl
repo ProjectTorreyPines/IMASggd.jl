@@ -1,4 +1,6 @@
-import IMASggd: interp, get_kdtree, project_prop_on_subset!, get_grid_subset
+import IMASggd:
+    interp, get_kdtree, project_prop_on_subset!, get_grid_subset, get_grid_ggd,
+    get_subset_boundary, subset_do, deepcopy_subset
 using IMASdd: IMASdd
 import Statistics: mean
 using Test
@@ -21,6 +23,9 @@ function parse_commandline()
             :action => :store_true),
         ["--interpeqt"],
         Dict(:help => "Test interpolation of equilibrium time slice",
+            :action => :store_true),
+        ["--subset_tools"],
+        Dict(:help => "Test subset tools",
             :action => :store_true),
     )
     args = ArgParse.parse_args(s)
@@ -154,6 +159,59 @@ if args["projection"]
         #     )
         # end
         @test true
+    end
+end
+
+if args["subset_tools"]
+    @testset "test subset_tools" begin
+        grid_ggd = ids.edge_profiles.grid_ggd[1]
+        space = grid_ggd.space[1]
+
+        @test grid_ggd == get_grid_ggd(space)
+
+        subset_core = get_grid_subset(grid_ggd, 22)
+        subset_sol = get_grid_subset(grid_ggd, 23)
+        subset_odr = get_grid_subset(grid_ggd, 24)
+        subset_idr = get_grid_subset(grid_ggd, 25)
+        subset_otarget = get_grid_subset(grid_ggd, 13)
+        subset_itarget = get_grid_subset(grid_ggd, 14)
+
+        subset_corebnd = get_grid_subset(grid_ggd, 15)
+        subset_separatrix = get_grid_subset(grid_ggd, 16)
+        subset_pfrcut = get_grid_subset(grid_ggd, 8)
+        subset_otsep = get_grid_subset(grid_ggd, 103)
+        subset_itsep = get_grid_subset(grid_ggd, 104)
+
+        core_bdry = get_subset_boundary(space, subset_core)
+        sol_bdry = get_subset_boundary(space, subset_sol)
+        idr_bdry = get_subset_boundary(space, subset_idr)
+        odr_bdry = get_subset_boundary(space, subset_odr)
+
+        @test subset_pfrcut.element ==
+              subset_do(intersect, idr_bdry, odr_bdry).element
+        @test subset_corebnd.element ==
+              subset_do(setdiff, core_bdry, sol_bdry).element
+        @test subset_separatrix.element ==
+              subset_do(intersect, sol_bdry,
+            subset_do(union, core_bdry, odr_bdry, idr_bdry)).element
+        @test subset_otsep.element ==
+              subset_do(
+            intersect,
+            subset_separatrix,
+            subset_otarget;
+            use_nodes=true,
+        ).element
+        @test subset_itsep.element ==
+              subset_do(
+            intersect,
+            subset_separatrix,
+            subset_itarget;
+            use_nodes=true,
+        ).element
+
+        sol_copy = deepcopy_subset(subset_sol)
+
+        @test subset_sol == deepcopy_subset(subset_sol)
     end
 end
 
