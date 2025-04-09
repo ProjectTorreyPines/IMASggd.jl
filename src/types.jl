@@ -624,7 +624,7 @@ all__grid_subset_prop =
     } where {T};
 
 """
-    Base.getproperty(@nospecialize(ids::all__grid_ggd), field::Symbol)
+    Base.getproperty(ids::all__grid_ggd, field::Symbol)
 
 This function links all grid_ggd types with each other. If the grid_ggd has a path
 defined to another instance of grid_ggd, this instance would automatically return
@@ -643,7 +643,7 @@ The following will return value stored in `ids.edge_profilesgrid_ggd[1].grid_sub
 ids.radiation.grid_ggd[1].grid_subset[36]
 ```
 """
-function Base.getproperty(@nospecialize(ids::all__grid_ggd), field::Symbol)
+function Base.getproperty(ids::all__grid_ggd, field::Symbol)
     if IMASdd.ismissing(ids, :path) || field == :path
         return IMASdd.getfield(ids, field)
     else

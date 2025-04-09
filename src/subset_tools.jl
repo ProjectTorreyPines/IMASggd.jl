@@ -1,5 +1,5 @@
 export add_subset_element!
-export get_subset_space
+export get_subset_space_objects
 export get_grid_subset
 export get_subset_boundary_inds
 export get_subset_boundary
@@ -76,15 +76,26 @@ function add_subset_element!(
 end
 
 """
-    get_subset_space(space::all__space, subset::all__grid_subset)
+    get_subset_space_objects(space::all__space, subset::all__grid_subset)
 
 Returns an array of space object indices corresponding to the correct
 objects_per_dimension (nodes, edges or cells) for the subset elements.
 """
-function get_subset_space(space::all__space, subset::all__grid_subset)
+function get_subset_space_objects(space::all__space, subset::all__grid_subset)
     nD = subset.element[1].object[1].dimension
     nD_objects = space.objects_per_dimension[nD].object
     return [nD_objects[ele.object[1].index] for ele ∈ subset.element]
+end
+
+"""
+    get_subset_space_objects(subset::all__grid_subset)
+
+Returns an array of space object indices corresponding to the correct
+objects_per_dimension (nodes, edges or cells) for the subset elements.
+"""
+function get_subset_space_objects(subset::all__grid_subset)
+    space = get_space(subset)
+    return get_subset_space_objects(space, subset)
 end
 
 """
@@ -102,11 +113,17 @@ function get_grid_subset(grid_ggd::all__grid_ggd, grid_subset_index::Int)
 end
 
 """
-    get_grid_subset(grid_ggd::all__grid_ggd, grid_subset_name::String)
+    get_grid_subset(
+        grid_ggd::all__grid_ggd,
+        grid_subset_name::String,
+    )
 
 Returns the grid_subset in a grid_ggd with the matching grid_subset_name
 """
-function get_grid_subset(grid_ggd::all__grid_ggd, grid_subset_name::String)
+function get_grid_subset(
+    grid_ggd::all__grid_ggd,
+    grid_subset_name::String,
+)
     for subset ∈ grid_ggd.grid_subset
         if subset.identifier.name == grid_subset_name
             return subset
@@ -174,7 +191,7 @@ function get_grid_ggd(subset::Union{all__grid_subset, all__space})::all__grid_gg
 end
 
 """
-    get_space_from_subset(subset::all__grid_subset)::all__space
+    get_space(subset::all__grid_subset)::all__space
 
 Get the corresponding space in parent grid_ggd for a grid_subset object.
 """
@@ -185,10 +202,11 @@ end
 
 """
     subset_do(
-        set_operator,
-        itrs::Vararg{all__grid_subset};
-        use_nodes=false,
-    )::all__grid_subset
+    set_operator,
+    itrs::Vararg{all__grid_subset};
+    use_nodes=false,
+
+)::all__grid_subset
 
 Function to perform any set operation (intersect, union, setdiff etc.) on
 subset.element to generate a list of elements to go to subset object. If use_nodes is
@@ -204,8 +222,8 @@ function subset_do(
         ele_inds = set_operator(
             [
                 union([
-                    obj.nodes for obj ∈ get_subset_space(space, subset)
-                ]...
+                        obj.nodes for obj ∈ get_subset_space_objects(space, subset)
+                    ]...
                 ) for subset ∈ itrs
             ]...,
         )
@@ -229,7 +247,7 @@ Returns an array of tuples corresponding to (r,z) coordinates of the center of
 cells or the center of edges in the subset space.
 """
 function get_subset_centers(space::all__space, subset::all__grid_subset)
-    subset_space = get_subset_space(space, subset)
+    subset_space = get_subset_space_objects(space, subset)
     if subset.element[1].object[1].dimension == 1
         return [Tuple(obj.geometry) for obj ∈ subset_space]
     end
@@ -241,12 +259,23 @@ function get_subset_centers(space::all__space, subset::all__grid_subset)
 end
 
 """
+    get_subset_centers(subset::all__grid_subset)
+
+Returns an array of tuples corresponding to (r,z) coordinates of the center of
+cells or the center of edges in the subset space.
+"""
+function get_subset_centers(subset::all__grid_subset)
+    space = get_space(subset)
+    return get_subset_centers(space, subset)
+end
+
+"""
     project_prop_on_subset!(
-        prop_arr::AbstractVector{<:all__grid_subset_prop},
-        from_subset::all__grid_subset,
-        to_subset::all__grid_subset,
+        prop_arr::AbstractVector{<:all__grid_subset_prop}),
+        from_subset::all__grid_subset),
+        to_subset::all__grid_subset),
         space::all__space,
-        value_field::Symbol=:values;
+        value_field::Symbol=:values,
         TPS_mats::Union{
             Nothing,
             Tuple{Matrix{U}, Matrix{U}, Matrix{U}, Vector{Tuple{U, U}}},
@@ -291,11 +320,11 @@ to_prop_values: The projected values of the properties added to prop object in a
 instance
 """
 function project_prop_on_subset!(
-    prop_arr::AbstractVector{<:all__grid_subset_prop},
+    prop_arr::IMASdd.IDSvector{<:all__grid_subset_prop},
     from_subset::all__grid_subset,
     to_subset::all__grid_subset,
     space::all__space,
-    value_field::Symbol=:values;
+    value_field::Symbol=:values,
     TPS_mats::Union{
         Nothing,
         Tuple{Matrix{U}, Matrix{U}, Matrix{U}, Vector{Tuple{U, U}}},
@@ -303,7 +332,7 @@ function project_prop_on_subset!(
 ) where {U <: Real}
     if from_subset.element[1].object[1].dimension ==
        to_subset.element[1].object[1].dimension
-        return project_prop_on_subset!(prop_arr, from_subset, to_subset)
+        return project_prop_on_subset!(prop_arr, from_subset, to_subset, value_field)
     elseif from_subset.element[1].object[1].dimension >
            to_subset.element[1].object[1].dimension
         if length(prop_arr) < 1
@@ -346,9 +375,9 @@ end
 
 """
     project_prop_on_subset!(
-        prop_arr::AbstractVector{<:all__grid_subset_prop},
-        from_subset::all__grid_subset,
-        to_subset::all__grid_subset,
+        prop_arr::AbstractVector{<:all__grid_subset_prop}),
+        from_subset::all__grid_subset),
+        to_subset::all__grid_subset),
         value_field::Symbol=:values,
     )
 
@@ -358,7 +387,7 @@ any interpolation or use of space object. The function returns a tuple of indice
 elements of to_subset and the values of the property in to_subset.
 """
 function project_prop_on_subset!(
-    prop_arr::AbstractVector{<:all__grid_subset_prop},
+    prop_arr::IMASdd.IDSvector{<:all__grid_subset_prop},
     from_subset::all__grid_subset,
     to_subset::all__grid_subset,
     value_field::Symbol=:values,
@@ -566,7 +595,7 @@ end
 
 """
     get_prop_with_grid_subset_index(
-        prop::AbstractVector{<:all__grid_subset_prop},
+        prop_arr::AbstractVector{<:all__grid_subset_prop}),
         grid_subset_index::Int,
     )
 
@@ -574,10 +603,10 @@ Find the property instance in an array of properties that corresponds to
 the grid_subset_index provided.
 """
 function get_prop_with_grid_subset_index(
-    prop::AbstractVector{<:all__grid_subset_prop},
+    prop_arr::AbstractVector{<:all__grid_subset_prop},
     grid_subset_index::Int,
 )
-    for p ∈ prop
+    for p ∈ prop_arr
         if p.grid_subset_index == grid_subset_index
             return p
         end

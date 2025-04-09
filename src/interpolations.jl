@@ -63,7 +63,7 @@ function interp(
         values = [prop_values[ii] for ii ∈ nearest_indices]
         weights = weighing.(distances)
         if any(isinf.(weights))
-            return values[distances.==0][1]
+            return values[distances .== 0][1]
         end
         return sum(weights .* values) / sum(weights)
     end
@@ -186,7 +186,7 @@ end
 """
     interp(
         prop_values::Vector{T},
-        space::all__space
+        space::all__space,
     ) where {T <: Real}
 
 If the whole space is provided instead of a kdtree, calculate the kdtree for whole
@@ -211,7 +211,7 @@ end
     interp(
         prop_values::Vector{Real},
         space::all__space,
-        subset::all__grid_subset
+        subset::all__grid_subset,
     )
 
 If a subset of the space is provided, calculate the kdtree for the subset. In this case
@@ -229,7 +229,7 @@ end
     interp(
         prop::all__grid_subset_prop,
         grid_ggd::all__grid_ggd,
-        value_field::Symbol=:values
+        value_field::Symbol=:values,
     )
 
 Example:
@@ -252,11 +252,11 @@ end
 
 """
     interp(
-        prop_arr::AbstractVector{T},
+        prop_arr::AbstractVector,
         space::all__space,
         subset::all__grid_subset,
-        value_field::Symbol=:values
-    ) where {T <: all__grid_subset_prop}
+        value_field::Symbol=:values,
+    )
 
 Example:
 
@@ -266,22 +266,22 @@ get_electron_density = interp(dd.edge_profiles.ggd[1].electrons.density, space, 
 ```
 """
 function interp(
-    prop_arr::AbstractVector{T},
+    prop_arr::AbstractVector,
     space::all__space,
     subset::all__grid_subset,
     value_field::Symbol=:values,
-) where {T <: all__grid_subset_prop}
+)
     prop = get_prop_with_grid_subset_index(prop_arr, subset.identifier.index)
     return interp(getfield(prop, value_field), space, subset)
 end
 
 """
     interp(
-        prop_arr::AbstractVector{T},
+        prop_arr::AbstractVector,
         grid_ggd::all__grid_ggd,
         grid_subset_index::Int,
-        value_field::Symbol=:values
-    ) where {T <: all__grid_subset_prop}
+        value_field::Symbol=:values,
+    )
 
 Example:
 
@@ -290,11 +290,11 @@ get_n_e_sep = interp(dd.edge_profiles.ggd[1].electrons.density, grid_ggd, 16)
 ```
 """
 function interp(
-    prop_arr::AbstractVector{T},
+    prop_arr::AbstractVector,
     grid_ggd::all__grid_ggd,
     grid_subset_index::Int,
     value_field::Symbol=:values,
-) where {T <: all__grid_subset_prop}
+)
     prop = get_prop_with_grid_subset_index(prop_arr, grid_subset_index)
     subset = get_grid_subset(grid_ggd, grid_subset_index)
     space = grid_ggd.space[subset.element[1].object[1].space]
@@ -309,11 +309,11 @@ end
 
 """
     interp(
-        prop_arr::AbstractVector{T},
+        prop_arr::AbstractVector,
         TPS_mats::Tuple{Matrix{U}, Matrix{U}, Matrix{U}, Vector{Tuple{U, U}}},
         grid_subset_index::Int,
-        value_field::Val{V}=Val(:values),
-    ) where {T <: all__grid_subset_prop, U <: Real, V}
+        value_field::Symbol=:values,
+    ) where {U <: Real, V}
 
 Same use case as above but allows one to reuse previously calculated TPS matrices.
 
@@ -331,13 +331,13 @@ end
 This will run faster as heavy matrix calculations will happen only once.
 """
 function interp(
-    prop_arr::AbstractVector{T},
+    prop_arr::AbstractVector,
     TPS_mats::Tuple{Matrix{U}, Matrix{U}, Matrix{U}, Vector{Tuple{U, U}}},
     grid_subset_index::Int,
-    value_field::Val{V}=Val(:values),
-) where {T <: all__grid_subset_prop, U <: Real, V}
+    value_field::Symbol=:values,
+) where {U <: Real}
     prop = get_prop_with_grid_subset_index(prop_arr, grid_subset_index)
-    field = getfield(prop, V)
+    field = getfield(prop, value_field)
     return interp(field, TPS_mats)
 end
 
