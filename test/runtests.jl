@@ -1,6 +1,6 @@
 import IMASggd:
     interp, get_kdtree, project_prop_on_subset!, get_grid_subset, get_grid_ggd,
-    get_subset_boundary, subset_do, deepcopy_subset
+    get_subset_boundary, subset_do, deepcopy_subset, get_TPS_mats
 using IMASdd: IMASdd
 import Statistics: mean
 using Test
@@ -85,6 +85,31 @@ if args["interp"]
         print("interp(prop_arr, grid_ggd, grid_subset_index) time: ")
         @time get_n_e = interp(ids.edge_profiles.ggd[1].electrons.density, grid_ggd, -5)
         searched_val = get_n_e(cell_center...)
+        @test abs.((grid_val .- searched_val) ./ grid_val) < allowed_rtol
+
+        # Use the TPS_mats to interpolate several quantities using
+        print("get_TPS_mats(space, subset) time: ")
+        @time TPS_mats = get_TPS_mats(space, subset)
+        print(
+            "interp(prop_arr(for n_e), TPS_mats, grid_subset_index, value_field) time: ",
+        )
+        @time get_n_e =
+            interp(ids.edge_profiles.ggd[1].electrons.density, TPS_mats, -5, :values)
+        searched_val = get_n_e(cell_center...)
+        @test abs.((grid_val .- searched_val) ./ grid_val) < allowed_rtol
+        print(
+            "interp(prop_arr(for T_e), TPS_mats, grid_subset_index, value_field) time: ",
+        )
+        @time get_T_e =
+            interp(
+                ids.edge_profiles.ggd[1].electrons.temperature,
+                TPS_mats,
+                -5,
+                :values,
+            )
+        searched_val = get_T_e(cell_center...)
+        grid_val =
+            ids.edge_profiles.ggd[1].electrons.temperature[1].values[chosen_index]
         @test abs.((grid_val .- searched_val) ./ grid_val) < allowed_rtol
 
         # Use the kdtree to interpolate several quantities using
