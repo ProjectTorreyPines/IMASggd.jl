@@ -27,6 +27,9 @@ function parse_commandline()
         ["--subset_tools"],
         Dict(:help => "Test subset tools",
             :action => :store_true),
+        ["--types"],
+        Dict(:help => "Test types",
+            :action => :store_true),
     )
     args = ArgParse.parse_args(s)
     if !any(values(args)) # If no flags are set, run all tests
@@ -229,5 +232,17 @@ if args["in"]
         @test (6.0, 3.0) ∉ (subset_sol, space)
         @test (5.1, -3.7) ∈ (subset_odr, space)
         @test (4.5, -3.7) ∉ (subset_odr, space)
+    end
+end
+
+if args["types"]
+    @testset "test types" begin
+        grid_ggd = ids.edge_profiles.grid_ggd[1]
+        resize!(ids.radiation.grid_ggd, 1)
+        ids.radiation.grid_ggd[1].path = "edge_profiles/grid_ggd(1)"
+        @test grid_ggd.grid_subset == ids.radiation.grid_ggd[1].grid_subset
+        @test grid_ggd.identifier == ids.radiation.grid_ggd[1].identifier
+        @test grid_ggd.space == ids.radiation.grid_ggd[1].space
+        @test grid_ggd.time == ids.radiation.grid_ggd[1].time
     end
 end
