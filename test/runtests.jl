@@ -1,6 +1,6 @@
 import IMASggd:
     interp, get_kdtree, project_prop_on_subset!, get_grid_subset, get_grid_ggd,
-    get_subset_boundary, subset_do, deepcopy_subset, get_TPS_mats
+    get_subset_boundary, subset_do, deepcopy_subset, get_TPS_mats, get_space
 using IMASdd: IMASdd
 import Statistics: mean
 using Test
@@ -195,14 +195,31 @@ if args["subset_tools"]
         grid_ggd = ids.edge_profiles.grid_ggd[1]
         space = grid_ggd.space[1]
 
-        @test grid_ggd == get_grid_ggd(space)
+        print("get_grid_ggd(space) time: ")
+        @time grid_ggd_copy = get_grid_ggd(space)
+        @test grid_ggd == grid_ggd_copy
 
-        subset_core = get_grid_subset(grid_ggd, 22)
-        subset_sol = get_grid_subset(grid_ggd, 23)
+        print("get_grid_subset(grid_ggd, 22) time: ")
+        @time subset_core = get_grid_subset(grid_ggd, 22)
+        @time subset_sol = get_grid_subset(grid_ggd, 23)
         subset_odr = get_grid_subset(grid_ggd, 24)
         subset_idr = get_grid_subset(grid_ggd, 25)
         subset_otarget = get_grid_subset(grid_ggd, 13)
         subset_itarget = get_grid_subset(grid_ggd, 14)
+
+        print("get_space(subset_core) time: ")
+        @time space_copy = get_space(subset_core)
+        @test space == space_copy
+        print("get_space(subset_sol) time: ")
+        @time space_copy = get_space(subset_sol)
+        @test space == space_copy
+
+        print("get_grid_ggd(subset_core) time: ")
+        @time grid_ggd_copy = get_grid_ggd(subset_core)
+        @test grid_ggd == grid_ggd_copy
+        print("get_grid_ggd(subset_sol) time: ")
+        @time grid_ggd_copy = get_grid_ggd(subset_sol)
+        @test grid_ggd == grid_ggd_copy
 
         subset_corebnd = get_grid_subset(grid_ggd, 15)
         subset_separatrix = get_grid_subset(grid_ggd, 16)
@@ -210,15 +227,20 @@ if args["subset_tools"]
         subset_otsep = get_grid_subset(grid_ggd, 103)
         subset_itsep = get_grid_subset(grid_ggd, 104)
 
-        core_bdry = get_subset_boundary(space, subset_core)
-        sol_bdry = get_subset_boundary(space, subset_sol)
+        print("get_subset_boundary(space, subset_core) time: ")
+        @time core_bdry = get_subset_boundary(space, subset_core)
+        print("get_subset_boundary(space, subset_sol) time: ")
+        @time sol_bdry = get_subset_boundary(space, subset_sol)
         idr_bdry = get_subset_boundary(space, subset_idr)
         odr_bdry = get_subset_boundary(space, subset_odr)
 
-        @test subset_pfrcut.element ==
-              subset_do(intersect, idr_bdry, odr_bdry).element
-        @test subset_corebnd.element ==
-              subset_do(setdiff, core_bdry, sol_bdry).element
+        print("subset_do(intersect, idr_bdry, odr_bdry) time: ")
+        @time subset_pfrcut_copy = subset_do(intersect, idr_bdry, odr_bdry)
+        @test subset_pfrcut.element == subset_pfrcut_copy.element
+
+        print("subset_do(setdiff, core_bdry, sol_bdry) time: ")
+        @time subset_corebnd_copy = subset_do(setdiff, core_bdry, sol_bdry)
+        @test subset_corebnd.element == subset_corebnd_copy.element
         @test subset_separatrix.element ==
               subset_do(intersect, sol_bdry,
             subset_do(union, core_bdry, odr_bdry, idr_bdry)).element
@@ -237,9 +259,9 @@ if args["subset_tools"]
             use_nodes=true,
         ).element
 
-        sol_copy = deepcopy_subset(subset_sol)
-
-        @test subset_sol == deepcopy_subset(subset_sol)
+        print("deepcopy_subset(subset_sol) time: ")
+        @time subset_sol_copy = deepcopy_subset(subset_sol)
+        @test subset_sol == subset_sol_copy
     end
 end
 

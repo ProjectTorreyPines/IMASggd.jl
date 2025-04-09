@@ -13,7 +13,7 @@ export get_prop_with_grid_subset_index
 
 """
     add_subset_element!(
-        @nospecialize(subset::all__grid_subset),
+        subset::all__grid_subset,
         sn::Int,
         dim::Int,
         index::Int,
@@ -25,7 +25,7 @@ Adds a new element to gird_subset with properties space number (sn), dimension (
 and index (index). The element is added only if the function in_subset returns true.
 """
 function add_subset_element!(
-    @nospecialize(subset::all__grid_subset),
+    subset::all__grid_subset,
     sn::Int,
     dim::Int,
     index::Int,
@@ -44,7 +44,7 @@ end
 
 """
     add_subset_element!(
-        @nospecialize(subset::all__grid_subset),
+        subset::all__grid_subset,
         sn::Int,
         dim::Int,
         index::Vector{Int},
@@ -55,7 +55,7 @@ end
 Overloaded to work differently (faster) with list of indices to be added.
 """
 function add_subset_element!(
-    @nospecialize(subset::all__grid_subset),
+    subset::all__grid_subset,
     sn::Int,
     dim::Int,
     index::Vector{Int},
@@ -76,29 +76,23 @@ function add_subset_element!(
 end
 
 """
-    get_subset_space(
-        @nospecialize(space::all__space),
-        @nospecialize(subset::all__grid_subset),
-    )
+    get_subset_space(space::all__space, subset::all__grid_subset)
 
 Returns an array of space object indices corresponding to the correct
 objects_per_dimension (nodes, edges or cells) for the subset elements.
 """
-function get_subset_space(
-    @nospecialize(space::all__space),
-    @nospecialize(subset::all__grid_subset),
-)
+function get_subset_space(space::all__space, subset::all__grid_subset)
     nD = subset.element[1].object[1].dimension
     nD_objects = space.objects_per_dimension[nD].object
     return [nD_objects[ele.object[1].index] for ele ∈ subset.element]
 end
 
 """
-    get_grid_subset(@nospecialize(grid_ggd::all__grid_ggd), grid_subset_index::Int)
+    get_grid_subset(grid_ggd::all__grid_ggd, grid_subset_index::Int)
 
 Returns the grid_subset in a grid_ggd with the matching grid_subset_index
 """
-function get_grid_subset(@nospecialize(grid_ggd::all__grid_ggd), grid_subset_index::Int)
+function get_grid_subset(grid_ggd::all__grid_ggd, grid_subset_index::Int)
     for subset ∈ grid_ggd.grid_subset
         if subset.identifier.index == grid_subset_index
             return subset
@@ -109,14 +103,14 @@ end
 
 """
     get_grid_subset(
-        @nospecialize(grid_ggd::all__grid_ggd),
+        grid_ggd::all__grid_ggd,
         grid_subset_name::String,
     )
 
 Returns the grid_subset in a grid_ggd with the matching grid_subset_name
 """
 function get_grid_subset(
-    @nospecialize(grid_ggd::all__grid_ggd),
+    grid_ggd::all__grid_ggd,
     grid_subset_name::String,
 )
     for subset ∈ grid_ggd.grid_subset
@@ -129,8 +123,8 @@ end
 
 """
     get_subset_boundary_inds(
-        @nospecialize(space::all__space),
-        @nospecialize(subset::all__grid_subset),
+        space::all__space,
+        subset::all__grid_subset,
     )::Array{Int}
 
 Returns an array of space object indices corresponding to the boundary of the subset.
@@ -139,8 +133,8 @@ it returns the indices of edges that are the the boundary of a cell subset.
 Returns an empty array if the subset is 1D (nodes).
 """
 function get_subset_boundary_inds(
-    @nospecialize(space::all__space),
-    @nospecialize(subset::all__grid_subset),
+    space::all__space,
+    subset::all__grid_subset,
 )::Array{Int}
     nD = subset.element[1].object[1].dimension
     if nD > 1  # Only 2D (edges) and 3D (cells) subsets have boundaries
@@ -157,16 +151,16 @@ end
 
 """
     get_subset_boundary(
-        @nospecialize(space::all__space),
-        @nospecialize(subset::all__grid_subset),
+        space::all__space,
+        subset::all__grid_subset,
     )::all__grid_subset
 
 Returns an array of elements of grid_subset generated from the boundary of the subset
 provided. The dimension of these elments is reduced by 1.
 """
 function get_subset_boundary(
-    @nospecialize(space::all__space),
-    @nospecialize(subset::all__grid_subset),
+    space::all__space,
+    subset::all__grid_subset,
 )::all__grid_subset
     ret_subset = typeof(subset)()
     boundary_inds = get_subset_boundary_inds(space, subset)
@@ -177,34 +171,31 @@ function get_subset_boundary(
 end
 
 """
-    get_grid_ggd(
-        @nospecialize(subset::Union{all__grid_subset, all__space}),
-    )::all__grid_ggd
+    get_grid_ggd(subset::Union{all__grid_subset, all__space})::all__grid_ggd
 
 Get the parent grid_ggd of a `grid_subset` or `space` object.
 """
-function get_grid_ggd(
-    @nospecialize(subset::Union{all__grid_subset, all__space}),
-)::all__grid_ggd
+function get_grid_ggd(subset::Union{all__grid_subset, all__space})::all__grid_ggd
     return getfield(getfield(subset, :_parent).value, :_parent).value
 end
 
 """
-    get_space(@nospecialize(subset::all__grid_subset))::all__space
+    get_space(subset::all__grid_subset)::all__space
 
 Get the corresponding space in parent grid_ggd for a grid_subset object.
 """
-function get_space(@nospecialize(subset::all__grid_subset))::all__space
+function get_space(subset::all__grid_subset)::all__space
     grid_ggd = get_grid_ggd(subset)
     return grid_ggd.space[subset.element[1].object[1].space]
 end
 
 """
     subset_do(
-        set_operator,
-        @nospecialize(itrs::Vararg{all__grid_subset});
-        use_nodes=false,
-    )::all__grid_subset
+    set_operator,
+    itrs::Vararg{all__grid_subset};
+    use_nodes=false,
+
+)::all__grid_subset
 
 Function to perform any set operation (intersect, union, setdiff etc.) on
 subset.element to generate a list of elements to go to subset object. If use_nodes is
@@ -212,7 +203,7 @@ true, the set operation will be applied on the set of nodes from subset.element.
 """
 function subset_do(
     set_operator,
-    @nospecialize(itrs::Vararg{all__grid_subset});
+    itrs::Vararg{all__grid_subset};
     use_nodes=false,
 )::all__grid_subset
     if use_nodes
@@ -239,18 +230,12 @@ function subset_do(
 end
 
 """
-    get_subset_centers(
-        @nospecialize(space::all__space),
-        @nospecialize(subset::all__grid_subset),
-    )
+    get_subset_centers(space::all__space, subset::all__grid_subset)
 
 Returns an array of tuples corresponding to (r,z) coordinates of the center of
 cells or the center of edges in the subset space.
 """
-function get_subset_centers(
-    @nospecialize(space::all__space),
-    @nospecialize(subset::all__grid_subset),
-)
+function get_subset_centers(space::all__space, subset::all__grid_subset)
     subset_space = get_subset_space(space, subset)
     if subset.element[1].object[1].dimension == 1
         return [Tuple(obj.geometry) for obj ∈ subset_space]
@@ -267,7 +252,7 @@ end
         @nospecialize(prop_arr::AbstractVector{<:all__grid_subset_prop}),
         @nospecialize(from_subset::all__grid_subset),
         @nospecialize(to_subset::all__grid_subset),
-        @nospecialize(space::all__space),
+        space::all__space,
         value_field::Symbol=:values,
         TPS_mats::Union{
             Nothing,
@@ -316,7 +301,7 @@ function project_prop_on_subset!(
     @nospecialize(prop_arr::AbstractVector{<:all__grid_subset_prop}),
     @nospecialize(from_subset::all__grid_subset),
     @nospecialize(to_subset::all__grid_subset),
-    @nospecialize(space::all__space),
+    space::all__space,
     value_field::Symbol=:values,
     TPS_mats::Union{
         Nothing,
@@ -439,12 +424,12 @@ function project_prop_on_subset!(
 end
 
 """
-    deepcopy_subset(@nospecialize(subset::all__grid_subset))::all__grid_subset
+    deepcopy_subset(subset::all__grid_subset)::all__grid_subset
 
 Faster deepcopy function for grid_subset object. This function is used to create a deep
 copy of a grid_subset object bypassing several checks performed by IMASdd.
 """
-function deepcopy_subset(@nospecialize(subset::all__grid_subset))::all__grid_subset
+function deepcopy_subset(subset::all__grid_subset)::all__grid_subset
     new_subset = typeof(subset)()
 
     base = getfield(subset, :base)
@@ -517,7 +502,7 @@ end
 """
     Base.:∈(
         point::Tuple{Real, Real},
-        @nospecialize(subset_of_space::Tuple{all__grid_subset, all__space}),
+        subset_of_space::Tuple{all__grid_subset, all__space},
     )::Bool
 
 Overloading ∈ operator to check if a point is inside a subset of space.
@@ -540,7 +525,7 @@ end
 """
 function Base.:∈(
     point::Tuple{Real, Real},
-    @nospecialize(subset_of_space::Tuple{all__grid_subset, all__space}),
+    subset_of_space::Tuple{all__grid_subset, all__space},
 )::Bool
     r, z = point
     subset, space = subset_of_space
