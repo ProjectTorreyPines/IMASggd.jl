@@ -63,7 +63,7 @@ function interp(
         values = [prop_values[ii] for ii ∈ nearest_indices]
         weights = weighing.(distances)
         if any(isinf.(weights))
-            return values[distances.==0][1]
+            return values[distances .== 0][1]
         end
         return sum(weights .* values) / sum(weights)
     end

@@ -137,7 +137,7 @@ is the heatmap and b is the colorbar.
         val_min = minimum(prop.values)
         val_max = maximum(prop.values)
         function get_color(prop_value)
-            return color_grad[(log10(prop_value / val_min)/log10(val_max / val_min))]
+            return color_grad[(log10(prop_value/val_min)/log10(val_max/val_min))]
         end
 
         if :colorbar_title in keys(plotattributes)
