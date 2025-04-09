@@ -303,7 +303,7 @@ function project_prop_on_subset!(
 ) where {U <: Real}
     if from_subset.element[1].object[1].dimension ==
        to_subset.element[1].object[1].dimension
-        return project_prop_on_subset!(prop, from_subset, to_subset)
+        return project_prop_on_subset!(prop_arr, from_subset, to_subset)
     elseif from_subset.element[1].object[1].dimension >
            to_subset.element[1].object[1].dimension
         if length(prop_arr) < 1
