@@ -76,15 +76,26 @@ function add_subset_element!(
 end
 
 """
-    get_subset_space(space::all__space, subset::all__grid_subset)
+    get_subset_space_objects(space::all__space, subset::all__grid_subset)
 
 Returns an array of space object indices corresponding to the correct
 objects_per_dimension (nodes, edges or cells) for the subset elements.
 """
-function get_subset_space(space::all__space, subset::all__grid_subset)
+function get_subset_space_objects(space::all__space, subset::all__grid_subset)
     nD = subset.element[1].object[1].dimension
     nD_objects = space.objects_per_dimension[nD].object
     return [nD_objects[ele.object[1].index] for ele ∈ subset.element]
+end
+
+"""
+    get_subset_space_objects(subset::all__grid_subset)
+
+Returns an array of space object indices corresponding to the correct
+objects_per_dimension (nodes, edges or cells) for the subset elements.
+"""
+function get_subset_space_objects(subset::all__grid_subset)
+    space = get_space(subset)
+    return get_subset_space_objects(space, subset)
 end
 
 """
@@ -211,8 +222,8 @@ function subset_do(
         ele_inds = set_operator(
             [
                 union([
-                    obj.nodes for obj ∈ get_subset_space(space, subset)
-                ]...
+                        obj.nodes for obj ∈ get_subset_space_objects(space, subset)
+                    ]...
                 ) for subset ∈ itrs
             ]...,
         )
@@ -236,7 +247,7 @@ Returns an array of tuples corresponding to (r,z) coordinates of the center of
 cells or the center of edges in the subset space.
 """
 function get_subset_centers(space::all__space, subset::all__grid_subset)
-    subset_space = get_subset_space(space, subset)
+    subset_space = get_subset_space_objects(space, subset)
     if subset.element[1].object[1].dimension == 1
         return [Tuple(obj.geometry) for obj ∈ subset_space]
     end
@@ -245,6 +256,17 @@ function get_subset_centers(space::all__space, subset::all__grid_subset)
         Tuple(mean(SVector{2}(grid_nodes[node].geometry) for node ∈ obj.nodes)) for
         obj ∈ subset_space
     ]
+end
+
+"""
+    get_subset_centers(subset::all__grid_subset)
+
+Returns an array of tuples corresponding to (r,z) coordinates of the center of
+cells or the center of edges in the subset space.
+"""
+function get_subset_centers(subset::all__grid_subset)
+    space = get_space(subset)
+    return get_subset_centers(space, subset)
 end
 
 """
@@ -298,10 +320,10 @@ to_prop_values: The projected values of the properties added to prop object in a
 instance
 """
 function project_prop_on_subset!(
-    @nospecialize(prop_arr::AbstractVector{<:all__grid_subset_prop}),
+    @nospecialize(prop_arr::IMASdd.IDSvector{<:all__grid_subset_prop}),
     @nospecialize(from_subset::all__grid_subset),
     @nospecialize(to_subset::all__grid_subset),
-    space::all__space,
+    @nospecialize(space::all__space),
     value_field::Symbol=:values,
     TPS_mats::Union{
         Nothing,
@@ -310,7 +332,7 @@ function project_prop_on_subset!(
 ) where {U <: Real}
     if from_subset.element[1].object[1].dimension ==
        to_subset.element[1].object[1].dimension
-        return project_prop_on_subset!(prop_arr, from_subset, to_subset)
+        return project_prop_on_subset!(prop_arr, from_subset, to_subset, value_field)
     elseif from_subset.element[1].object[1].dimension >
            to_subset.element[1].object[1].dimension
         if length(prop_arr) < 1
@@ -365,7 +387,7 @@ any interpolation or use of space object. The function returns a tuple of indice
 elements of to_subset and the values of the property in to_subset.
 """
 function project_prop_on_subset!(
-    @nospecialize(prop_arr::AbstractVector{<:all__grid_subset_prop}),
+    @nospecialize(prop_arr::IMASdd.IDSvector{<:all__grid_subset_prop}),
     @nospecialize(from_subset::all__grid_subset),
     @nospecialize(to_subset::all__grid_subset),
     value_field::Symbol=:values,
