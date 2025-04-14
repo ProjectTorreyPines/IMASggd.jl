@@ -271,9 +271,9 @@ end
 
 """
     project_prop_on_subset!(
-        @nospecialize(prop_arr::AbstractVector{<:all__grid_subset_prop}),
-        @nospecialize(from_subset::all__grid_subset),
-        @nospecialize(to_subset::all__grid_subset),
+        prop_arr::AbstractVector{<:all__grid_subset_prop}),
+        from_subset::all__grid_subset),
+        to_subset::all__grid_subset),
         space::all__space,
         value_field::Symbol=:values,
         TPS_mats::Union{
@@ -320,10 +320,10 @@ to_prop_values: The projected values of the properties added to prop object in a
 instance
 """
 function project_prop_on_subset!(
-    @nospecialize(prop_arr::IMASdd.IDSvector{<:all__grid_subset_prop}),
-    @nospecialize(from_subset::all__grid_subset),
-    @nospecialize(to_subset::all__grid_subset),
-    @nospecialize(space::all__space),
+    prop_arr::IMASdd.IDSvector{<:all__grid_subset_prop},
+    from_subset::all__grid_subset,
+    to_subset::all__grid_subset,
+    space::all__space,
     value_field::Symbol=:values,
     TPS_mats::Union{
         Nothing,
@@ -375,9 +375,9 @@ end
 
 """
     project_prop_on_subset!(
-        @nospecialize(prop_arr::AbstractVector{<:all__grid_subset_prop}),
-        @nospecialize(from_subset::all__grid_subset),
-        @nospecialize(to_subset::all__grid_subset),
+        prop_arr::AbstractVector{<:all__grid_subset_prop}),
+        from_subset::all__grid_subset),
+        to_subset::all__grid_subset),
         value_field::Symbol=:values,
     )
 
@@ -387,9 +387,9 @@ any interpolation or use of space object. The function returns a tuple of indice
 elements of to_subset and the values of the property in to_subset.
 """
 function project_prop_on_subset!(
-    @nospecialize(prop_arr::IMASdd.IDSvector{<:all__grid_subset_prop}),
-    @nospecialize(from_subset::all__grid_subset),
-    @nospecialize(to_subset::all__grid_subset),
+    prop_arr::IMASdd.IDSvector{<:all__grid_subset_prop},
+    from_subset::all__grid_subset,
+    to_subset::all__grid_subset,
     value_field::Symbol=:values,
 )
     from_prop = get_prop_with_grid_subset_index(prop_arr, from_subset.identifier.index)
@@ -595,7 +595,7 @@ end
 
 """
     get_prop_with_grid_subset_index(
-        @nospecialize(prop_arr::AbstractVector{<:all__grid_subset_prop}),
+        prop_arr::AbstractVector{<:all__grid_subset_prop}),
         grid_subset_index::Int,
     )
 
@@ -603,7 +603,7 @@ Find the property instance in an array of properties that corresponds to
 the grid_subset_index provided.
 """
 function get_prop_with_grid_subset_index(
-    @nospecialize(prop_arr::AbstractVector{<:all__grid_subset_prop}),
+    prop_arr::AbstractVector{<:all__grid_subset_prop},
     grid_subset_index::Int,
 )
     for p ∈ prop_arr
