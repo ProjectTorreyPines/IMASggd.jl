@@ -31,7 +31,7 @@ get_kdtree
 
 ```@docs
 add_subset_element!
-get_subset_space
+get_subset_space_objects
 get_grid_subset
 get_subset_boundary_inds
 get_subset_boundary

@@ -3,7 +3,7 @@ using ColorSchemes: ColorSchemes
 import Statistics: norm, dot
 
 """
-    plot(space::all__space)
+    plot(space::all__space))
 
 Plot the grid_ggd space object. Defaults to size of [600, 900] and linecolor of :black,
 linewidth of 0.2, and no legend.
@@ -40,7 +40,7 @@ linewidth of 0.2, and no legend.
 end
 
 """
-    plot(space::all__space, subset::all__grid_subset)
+    plot(space::all__space, subset::all__grid_subset))
 
 Plot the a subset of a space. Defaults to size of [600, 900] and linecolor of :black,
 linewidth of 0.2, and no legend.
@@ -137,7 +137,7 @@ is the heatmap and b is the colorbar.
         val_min = minimum(prop.values)
         val_max = maximum(prop.values)
         function get_color(prop_value)
-            return color_grad[(log10(prop_value / val_min)/log10(val_max / val_min))]
+            return color_grad[(log10(prop_value/val_min)/log10(val_max/val_min))]
         end
 
         if :colorbar_title in keys(plotattributes)
@@ -178,7 +178,10 @@ is the heatmap and b is the colorbar.
 end
 
 """
-    plot(grid_ggd_arr::AbstractVector{<:all__grid_ggd}, prop::all__grid_subset_prop)
+    plot(
+        grid_ggd_arr::AbstractVector{<:all__grid_ggd},
+        prop::all__grid_subset_prop,
+    )
 
 Plot 2D heatmap of edge_profiles_ggd property on a grid_ggd space object. Defaults to
 size of [635, 900], xaxis of "R / m", yaxis of "Z / m", and no legend. If :seriescolor
