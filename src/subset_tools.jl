@@ -427,8 +427,8 @@ function project_prop_on_subset!(
             filtered_values =
                 [from_prop_values[from_ele_ind] for from_ele_ind ∈ from_ele_inds]
             resize!(to_prop_values, length(filtered_values))
-            to_prop_values = filtered_values
-            return to_subset_ele_obj_inds, to_prop_values
+            setproperty!(to_prop, value_field, filtered_values)
+            return to_subset_ele_obj_inds, filtered_values
         else
             error(
                 "to_subset ($(to_subset.identifier.index)) does not lie entirely inside ",
