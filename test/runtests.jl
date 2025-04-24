@@ -158,15 +158,14 @@ end
 
 if args["projection"]
     @testset "project_prop_on_subset!" begin
-        space = ids.edge_profiles.grid_ggd[1].space[1]
         prop = ids.edge_profiles.ggd[1].electrons.density
         # All cells
         from_subset = get_grid_subset(ids.edge_profiles.grid_ggd[1], -5)
         # separatix
         to_subset = get_grid_subset(ids.edge_profiles.grid_ggd[1], 16)
-        print("project_prop_on_subset!(prop, from_subset, to_subset, space) time: ")
+        print("project_prop_on_subset!(prop, from_subset, to_subset) time: ")
         @time separatix_centers, values_at_separatix =
-            project_prop_on_subset!(prop, from_subset, to_subset, space)
+            project_prop_on_subset!(prop, from_subset, to_subset)
         # println("Projected to separatix:")
         # for ii ∈ eachindex(separatix_centers)
         #     println(separatix_centers[ii], ": ", values_at_separatix[ii])
