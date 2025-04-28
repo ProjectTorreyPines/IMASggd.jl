@@ -185,6 +185,22 @@ if args["projection"]
         #         values_at_core[ii]
         #     )
         # end
+
+        idstd = IMASdd.json2imas(
+            "$(@__DIR__)/../samples/time_dep_edge_profiles_with_interferometer.json",
+        )
+        # All cells
+        from_subset = get_grid_subset(idstd.edge_profiles.grid_ggd[1], -5)
+        # separatix
+        to_subset = get_grid_subset(idstd.edge_profiles.grid_ggd[1], 16)
+        print("project_prop_on_subset!(ggds, prop_path, from_subset, to_subset) time: ")
+        @time projection_return =
+            project_prop_on_subset!(
+                idstd.edge_profiles.ggd,
+                "electrons.density",
+                from_subset,
+                to_subset,
+            )
         @test true
     end
 end

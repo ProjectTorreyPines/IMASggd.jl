@@ -276,10 +276,12 @@ end
         to_subset::all__grid_subset;
         space::all__space=get_space(from_subset),
         value_field::Symbol=:values,
-        TPS_mats::Union{
-            Nothing,
-            Tuple{Matrix{U}, Matrix{U}, Matrix{U}, Vector{Tuple{U, U}}},
-        }=nothing,
+
+        TPS_mats::Tuple{Matrix{U}, Matrix{U}, Matrix{U}, Vector{Tuple{U, U}}}=get_TPS_mats(
+            space,
+            from_subset,
+        ),
+
     ) where {U <: Real}
 
 This function can be used to add another instance on a property vector representing the
@@ -319,10 +321,10 @@ function project_prop_on_subset!(
     to_subset::all__grid_subset;
     space::all__space=get_space(from_subset),
     value_field::Symbol=:values,
-    TPS_mats::Union{
-        Nothing,
-        Tuple{Matrix{U}, Matrix{U}, Matrix{U}, Vector{Tuple{U, U}}},
-    }=nothing,
+    TPS_mats::Tuple{Matrix{U}, Matrix{U}, Matrix{U}, Vector{Tuple{U, U}}}=get_TPS_mats(
+        space,
+        from_subset,
+    ),
 ) where {U <: Real}
     if length(prop_arr) < 1
         error(
@@ -386,6 +388,87 @@ function project_prop_on_subset!(
             "from_subset ($(from_subset.identifier.index))",
         )
     end
+end
+
+"""
+    project_prop_on_subset!(
+        ggds::IMASdd.IDSvector{<:all__ggd},
+        prop_path::String,
+        from_subset::all__grid_subset,
+        to_subset::all__grid_subset;
+        space::all__space=get_space(from_subset),
+        value_field::Symbol=:values,
+        TPS_mats::Tuple{Matrix{U}, Matrix{U}, Matrix{U}, Vector{Tuple{U, U}}}=get_TPS_mats(
+            space,
+            from_subset,
+        ),
+    ) where {U <: Real}
+
+This function projects properties from `from_subset` to `to_subset` for each of the
+`ggds` element. Here property is given as a relative path from `ggd` object. For
+example, for electron density in `edge_profiles`, one would provide `edge_profiles.ggd`
+as the `ggds` argument and "electrons.density" as the `prop_path` argument. Note that
+`prop_path` can be parsed even if it includes array in it. For example, in
+`edge_profiles.ggd`, `prop_path` of "ion.state[7].density" would correspond to the
+index 7 in `state` array of `ion` while a `prop_path` of "ion.state[:].density" would
+do the projection for all the states of the `ion`. This function call returns a combined
+list of return tuples for all projections performed.
+"""
+function project_prop_on_subset!(
+    ggds::IMASdd.IDSvector{<:all__ggd},
+    prop_path::String,
+    from_subset::all__grid_subset,
+    to_subset::all__grid_subset;
+    space::all__space=get_space(from_subset),
+    value_field::Symbol=:values,
+    TPS_mats::Tuple{Matrix{U}, Matrix{U}, Matrix{U}, Vector{Tuple{U, U}}}=get_TPS_mats(
+        space,
+        from_subset,
+    ),
+) where {U <: Real}
+    prop_arrays = Array{IMASdd.IDSvector{<:all__grid_subset_prop}}[]
+    for ggd ∈ ggds
+        append!(prop_arrays, _prop_arrays_from_path(prop_path::String, ggd))
+    end
+    to_return = []
+    for prop_arr ∈ prop_arrays
+        append!(
+            to_return,
+            project_prop_on_subset!(
+                prop_arr,
+                from_subset,
+                to_subset;
+                space,
+                value_field,
+                TPS_mats,
+            ),
+        )
+    end
+    return to_return
+end
+
+function _prop_arrays_from_path(prop_path::String, parent)
+    prop_arrays = Array{IMASdd.IDSvector{<:all__grid_subset_prop}}[]
+    if occursin(".", prop_path)
+        pf = split(prop_path, ".")[1]
+        rem_path = prop_path[(findfirst('.', prop_path)+1):end]
+        if occursin("[", pf)
+            new_parent = getfield(parent, Symbol(pf[1:(findfirst('[', pf)-1)]))
+            ind_str = pf[(findfirst('[', pf)+1):(findfirst(']', pf)-1)]
+            if ind_str == ":"
+                for np ∈ new_parent
+                    append!(prop_arrays, _prop_arrays_from_path(rem_path, np))
+                end
+            else
+                ind = parse(Int, ind_str)
+                append!(prop_arrays, _prop_arrays_from_path(rem_path, new_parent[ind]))
+            end
+        else
+            new_parent = getfield(parent, Symbol(pf))
+            append!(prop_arrays, _prop_arrays_from_path(rem_path, new_parent))
+        end
+    end
+    return prop_arrays
 end
 
 """
