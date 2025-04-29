@@ -58,6 +58,7 @@ can be imported for further use.
 IMASggd.all__grid_ggd
 IMASggd.all__space
 IMASggd.all__grid_subset
+IMASggd.all__ggd
 IMASggd.all__grid_subset_prop
 ```
 

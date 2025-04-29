@@ -202,11 +202,11 @@ end
 
 """
     subset_do(
-    set_operator,
-    itrs::Vararg{all__grid_subset};
-    use_nodes=false,
 
-)::all__grid_subset
+        set_operator,
+        itrs::Vararg{all__grid_subset};
+        use_nodes=false,
+    )::all__grid_subset
 
 Function to perform any set operation (intersect, union, setdiff etc.) on
 subset.element to generate a list of elements to go to subset object. If use_nodes is
@@ -271,15 +271,17 @@ end
 
 """
     project_prop_on_subset!(
-        prop_arr::AbstractVector{<:all__grid_subset_prop}),
-        from_subset::all__grid_subset),
-        to_subset::all__grid_subset),
-        space::all__space,
+        prop_arr::IMASdd.IDSvector{<:all__grid_subset_prop},
+        from_subset::all__grid_subset,
+        to_subset::all__grid_subset;
+        space::all__space=get_space(from_subset),
         value_field::Symbol=:values,
-        TPS_mats::Union{
-            Nothing,
-            Tuple{Matrix{U}, Matrix{U}, Matrix{U}, Vector{Tuple{U, U}}},
-        }=nothing,
+
+        TPS_mats::Tuple{Matrix{U}, Matrix{U}, Matrix{U}, Vector{Tuple{U, U}}}=get_TPS_mats(
+            space,
+            from_subset,
+        ),
+
     ) where {U <: Real}
 
 This function can be used to add another instance on a property vector representing the
@@ -287,75 +289,90 @@ value in a new subset that can be taken as a projection from an existing larger 
 
 Input Arguments:
 
-  - prop: A property like electrons.density that is a vector of objects with fields
+  - `prop`: A property like electrons.density that is a vector of objects with fields
     coefficients, grid_index, grid_subset_index, and values. The different instances
     in the vector correspond to different grid_subset for which the property is
     provided.
-  - from_subset: grid_subset object which is already represented in the property instance.
+  - `from_subset`: grid_subset object which is already represented in the property instance.
     grid subset with index 5 is populated in electrons.density already if the
     values for all cells are present.
-  - to_subset: grid_subset which is either a smaller part of from_subset (core, sol, idr,
+  - `to_subset`: grid_subset which is either a smaller part of from_subset (core, sol, idr,
     odr) but has same dimensions as from_subset
     OR
     is smaller in dimension that goes through the from_subset (core_boundary,
     separatix etc.)
-  - space: (optional) space object in grid_ggd is required only when from_subset is
-    higher dimensional than to_subset.
+  - `space`: (optional) space object in grid_ggd corresponding to the subsets
+  - `value_field`: If the values field is called something else, that can be provided here.
 
 Returns:
 NOTE: This function ends in ! which means it updates prop argument in place. But for
 the additional utility, this function also returns a tuple
-(to_subset_centers, to_prop_values) when from_subset dimension is greater than
-to_subset dimension
-OR
-(to_subset_ele_obj_inds, to_prop_values) when from_subset dimension is same as
-to_subset dimension)
 
-Descriptions:
-to_subset_centers: center of cells or center of edges of the to_subset where property
-values are defined and stored
-to_subset_ele_obj_inds: Indices of the elements of to_subset where property values are
-defined and stored
-to_prop_values: The projected values of the properties added to prop object in a new
-instance
+(`to_subset_centers`, `to_prop_values`)
+
+  - `to_subset_centers`: center of cells or center of edges of the to_subset where
+    property values are defined and stored
+  - `to_prop_values`: The projected values of the properties added to prop object in a
+    new instance
 """
 function project_prop_on_subset!(
     prop_arr::IMASdd.IDSvector{<:all__grid_subset_prop},
     from_subset::all__grid_subset,
-    to_subset::all__grid_subset,
-    space::all__space,
+    to_subset::all__grid_subset;
+    space::all__space=get_space(from_subset),
     value_field::Symbol=:values,
-    TPS_mats::Union{
-        Nothing,
-        Tuple{Matrix{U}, Matrix{U}, Matrix{U}, Vector{Tuple{U, U}}},
-    }=nothing,
+    TPS_mats::Tuple{Matrix{U}, Matrix{U}, Matrix{U}, Vector{Tuple{U, U}}}=get_TPS_mats(
+        space,
+        from_subset,
+    ),
 ) where {U <: Real}
-    if from_subset.element[1].object[1].dimension ==
-       to_subset.element[1].object[1].dimension
-        return project_prop_on_subset!(prop_arr, from_subset, to_subset, value_field)
-    elseif from_subset.element[1].object[1].dimension >
-           to_subset.element[1].object[1].dimension
-        if length(prop_arr) < 1
+    if length(prop_arr) < 1
+        error(
+            "The property $(strip(repr(prop_arr))) is empty; ",
+            "there are no data available for any subset.",
+        )
+    end
+    from_prop = get_prop_with_grid_subset_index(prop_arr, from_subset.identifier.index)
+    if isnothing(from_prop)
+        error(
+            "from_subset ($(from_subset.identifier.index)) not represented in the ",
+            "property yet",
+        )
+    end
+    to_subset_centers = get_subset_centers(space, to_subset)
+    from_dim = from_subset.element[1].object[1].dimension
+    to_dim = to_subset.element[1].object[1].dimension
+    resize!(prop_arr, length(prop_arr) + 1)
+    to_prop = prop_arr[end]
+    to_prop.grid_index = from_prop.grid_index
+    to_prop.grid_subset_index = to_subset.identifier.index
+    to_prop_values = getfield(to_prop, value_field)
+    from_prop_values = getfield(from_prop, value_field)
+    if from_dim == to_dim
+        from_subset_ele_obj_inds = [ele.object[1].index for ele ∈ from_subset.element]
+        to_subset_ele_obj_inds = [ele.object[1].index for ele ∈ to_subset.element]
+        if to_subset_ele_obj_inds ⊆ from_subset_ele_obj_inds
+            from_ele_inds = []
+            for to_ele_obj_ind ∈ to_subset_ele_obj_inds
+                for (from_ele_ind, from_ele_obj_ind) ∈
+                    enumerate(from_subset_ele_obj_inds)
+                    if from_ele_obj_ind == to_ele_obj_ind
+                        append!(from_ele_inds, from_ele_ind)
+                    end
+                end
+            end
+            filtered_values =
+                [from_prop_values[from_ele_ind] for from_ele_ind ∈ from_ele_inds]
+            resize!(to_prop_values, length(filtered_values))
+            setproperty!(to_prop, value_field, filtered_values)
+            return to_subset_centers, filtered_values
+        else
             error(
-                "The property $(strip(repr(prop_arr))) is empty; ",
-                "there are no data available for any subset.",
+                "to_subset ($(to_subset.identifier.index)) does not lie entirely inside ",
+                "from_subset ($(from_subset.identifier.index)). Projection not possible.",
             )
         end
-        from_prop =
-            get_prop_with_grid_subset_index(prop_arr, from_subset.identifier.index)
-        if isnothing(from_prop)
-            error(
-                "from_subset ($(from_subset.identifier.index)) not represented in the ",
-                "property yet",
-            )
-        end
-        to_subset_centers = get_subset_centers(space, to_subset)
-        resize!(prop_arr, length(prop_arr) + 1)
-        to_prop = prop_arr[end]
-        to_prop.grid_index = from_prop.grid_index
-        to_prop.grid_subset_index = to_subset.identifier.index
-        to_prop_values = getfield(to_prop, value_field)
-        from_prop_values = getfield(from_prop, value_field)
+    elseif from_dim > to_dim
         resize!(to_prop_values, length(to_subset.element))
         if isnothing(TPS_mats)
             prop_interp = interp(prop_arr, space, from_subset)
@@ -375,74 +392,83 @@ end
 
 """
     project_prop_on_subset!(
-        prop_arr::AbstractVector{<:all__grid_subset_prop}),
-        from_subset::all__grid_subset),
-        to_subset::all__grid_subset),
+        ggds::IMASdd.IDSvector{<:all__ggd},
+        prop_path::String,
+        from_subset::all__grid_subset,
+        to_subset::all__grid_subset;
+        space::all__space=get_space(from_subset),
         value_field::Symbol=:values,
-    )
+        TPS_mats::Tuple{Matrix{U}, Matrix{U}, Matrix{U}, Vector{Tuple{U, U}}}=get_TPS_mats(
+            space,
+            from_subset,
+        ),
+    ) where {U <: Real}
 
-If the dimensions of from_subset and to_subset are the same, this function can be used
-to add another instance on a property vector representing the value in to_subset without
-any interpolation or use of space object. The function returns a tuple of indices of
-elements of to_subset and the values of the property in to_subset.
+This function projects properties from `from_subset` to `to_subset` for each of the
+`ggds` element. Here property is given as a relative path from `ggd` object. For
+example, for electron density in `edge_profiles`, one would provide `edge_profiles.ggd`
+as the `ggds` argument and "electrons.density" as the `prop_path` argument. Note that
+`prop_path` can be parsed even if it includes array in it. For example, in
+`edge_profiles.ggd`, `prop_path` of "ion.state[7].density" would correspond to the
+index 7 in `state` array of `ion` while a `prop_path` of "ion.state[:].density" would
+do the projection for all the states of the `ion`. This function call returns a combined
+list of return tuples for all projections performed.
 """
 function project_prop_on_subset!(
-    prop_arr::IMASdd.IDSvector{<:all__grid_subset_prop},
+    ggds::IMASdd.IDSvector{<:all__ggd},
+    prop_path::String,
     from_subset::all__grid_subset,
-    to_subset::all__grid_subset,
+    to_subset::all__grid_subset;
+    space::all__space=get_space(from_subset),
     value_field::Symbol=:values,
-)
-    from_prop = get_prop_with_grid_subset_index(prop_arr, from_subset.identifier.index)
-    if length(prop_arr) < 1
-        error(
-            "The property $(strip(repr(prop_arr))) is empty; ",
-            "there are no data available for any subset.",
+    TPS_mats::Tuple{Matrix{U}, Matrix{U}, Matrix{U}, Vector{Tuple{U, U}}}=get_TPS_mats(
+        space,
+        from_subset,
+    ),
+) where {U <: Real}
+    prop_arrays = Array{IMASdd.IDSvector{<:all__grid_subset_prop}}[]
+    for ggd ∈ ggds
+        append!(prop_arrays, _prop_arrays_from_path(prop_path::String, ggd))
+    end
+    to_return = []
+    for prop_arr ∈ prop_arrays
+        append!(
+            to_return,
+            project_prop_on_subset!(
+                prop_arr,
+                from_subset,
+                to_subset;
+                space,
+                value_field,
+                TPS_mats,
+            ),
         )
     end
-    if isnothing(from_prop)
-        error(
-            "from_subset ($(from_subset.identifier.index)) not represented in the property yet",
-        )
-    end
-    if from_subset.element[1].object[1].dimension ==
-       to_subset.element[1].object[1].dimension
-        resize!(prop_arr, length(prop_arr) + 1)
-        to_prop = prop_arr[end]
-        to_prop.grid_index = from_prop.grid_index
-        to_prop.grid_subset_index = to_subset.identifier.index
-        to_prop_values = getfield(to_prop, value_field)
-        from_prop_values = getfield(from_prop, value_field)
-        from_subset_ele_obj_inds = [ele.object[1].index for ele ∈ from_subset.element]
-        to_subset_ele_obj_inds = [ele.object[1].index for ele ∈ to_subset.element]
-        if to_subset_ele_obj_inds ⊆ from_subset_ele_obj_inds
-            from_ele_inds = []
-            for to_ele_obj_ind ∈ to_subset_ele_obj_inds
-                for (from_ele_ind, from_ele_obj_ind) ∈
-                    enumerate(from_subset_ele_obj_inds)
-                    if from_ele_obj_ind == to_ele_obj_ind
-                        append!(from_ele_inds, from_ele_ind)
-                    end
+    return to_return
+end
+
+function _prop_arrays_from_path(prop_path::String, parent)
+    prop_arrays = Array{IMASdd.IDSvector{<:all__grid_subset_prop}}[]
+    if occursin(".", prop_path)
+        pf = split(prop_path, ".")[1]
+        rem_path = prop_path[(findfirst('.', prop_path)+1):end]
+        if occursin("[", pf)
+            new_parent = getfield(parent, Symbol(pf[1:(findfirst('[', pf)-1)]))
+            ind_str = pf[(findfirst('[', pf)+1):(findfirst(']', pf)-1)]
+            if ind_str == ":"
+                for np ∈ new_parent
+                    append!(prop_arrays, _prop_arrays_from_path(rem_path, np))
                 end
+            else
+                ind = parse(Int, ind_str)
+                append!(prop_arrays, _prop_arrays_from_path(rem_path, new_parent[ind]))
             end
-            filtered_values =
-                [from_prop_values[from_ele_ind] for from_ele_ind ∈ from_ele_inds]
-            resize!(to_prop_values, length(filtered_values))
-            to_prop_values = filtered_values
-            return to_subset_ele_obj_inds, to_prop_values
         else
-            error(
-                "to_subset ($(to_subset.identifier.index)) does not lie entirely inside ",
-                "from_subset ($(from_subset.identifier.index)). Projection not possible.",
-            )
+            new_parent = getfield(parent, Symbol(pf))
+            append!(prop_arrays, _prop_arrays_from_path(rem_path, new_parent))
         end
-    else
-        error(
-            "Dimensions of from_subset ($(from_subset.identifier.index)) and to_subset ",
-            "($(to_subset.identifier.index)) do not match. Provide keyword ",
-            "argument space if you want to project to a smaller dimension as space ",
-            "information is required for that. Use\n",
-            "project_prop_on_subset!(prop, from_subset, to_subset; space=space)")
     end
+    return prop_arrays
 end
 
 """

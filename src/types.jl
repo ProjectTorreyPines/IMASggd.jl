@@ -171,6 +171,37 @@ all__grid_subset =
     } where {T};
 
 """
+    all__ggd =
+        Union{
+            IMASdd.distribution_sources__source___ggd{T},
+            IMASdd.distributions__distribution___ggd{T},
+            IMASdd.edge_profiles__ggd{T},
+            IMASdd.edge_sources__source___ggd{T},
+            IMASdd.edge_transport__model___ggd{T},
+            IMASdd.equilibrium__time_slice___ggd{T},
+            IMASdd.mhd__ggd{T},
+            IMASdd.radiation__process___ggd{T},
+            IMASdd.runaway_electrons__distribution__ggd{T},
+            IMASdd.wall__description_ggd___ggd{T},
+        } where {T};
+
+Union of all Generalized Grid Description (ggd) objects in IMAS.
+"""
+all__ggd =
+    Union{
+        IMASdd.distribution_sources__source___ggd{T},
+        IMASdd.distributions__distribution___ggd{T},
+        IMASdd.edge_profiles__ggd{T},
+        IMASdd.edge_sources__source___ggd{T},
+        IMASdd.edge_transport__model___ggd{T},
+        IMASdd.equilibrium__time_slice___ggd{T},
+        IMASdd.mhd__ggd{T},
+        IMASdd.radiation__process___ggd{T},
+        IMASdd.runaway_electrons__distribution__ggd{T},
+        IMASdd.wall__description_ggd___ggd{T},
+    } where {T};
+
+"""
     all__grid_subset_prop
 
 A large union of all `ggd` properties that refer to a `grid_subset` for the dimensions

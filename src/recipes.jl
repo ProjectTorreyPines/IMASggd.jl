@@ -128,17 +128,28 @@ is the heatmap and b is the colorbar.
     yaxis --> "Z / m"
     layout := @layout [a{0.95w} b]
     if subset.element[1].object[1].dimension == 3
+        if :value_field in keys(plotattributes)
+            value_field = plotattributes[:value_field]
+        else
+            value_field = :values
+        end
+        prop_values = getfield(prop, value_field)
         if :seriescolor in keys(plotattributes)
             color_scheme = plotattributes[:seriescolor]
         else
             color_scheme = :inferno
         end
-        color_grad = getproperty(ColorSchemes, color_scheme)
-        val_min = minimum(prop.values)
-        val_max = maximum(prop.values)
-        function get_color(prop_value)
-            return color_grad[(log10(prop_value/val_min)/log10(val_max/val_min))]
+        if :clims in keys(plotattributes)
+            val_min, val_max = plotattributes[:clims]
+        else
+            val_min = minimum(prop_values)
+            val_max = maximum(prop_values)
         end
+        color_grad = getproperty(ColorSchemes, color_scheme)
+        colors = [
+            color_grad[(log10(pv/val_min)/log10(val_max/val_min))] for
+            pv ∈ prop_values
+        ]
 
         if :colorbar_title in keys(plotattributes)
             prop_name = plotattributes[:colorbar_title]
@@ -163,13 +174,14 @@ is the heatmap and b is the colorbar.
 
         # Actual plot is plotted as different cell shapes filled with color values
         # based on property value
-        for (ele, prop_value) ∈ zip(subset.element, prop.values)
+        for (ele, color) ∈ zip(subset.element, colors)
             cell = cells[ele.object[1].index]
             @series begin
                 subplot := 1
                 seriestype := :shape
-                linecolor := get_color(prop_value)
-                fillcolor := get_color(prop_value)
+                linecolor := color
+                fillcolor := color
+                aspect_ratio := :equal
                 label := ""
                 [Tuple(nodes[cell.nodes[ii]].geometry) for ii ∈ [1, 2, 4, 3]]
             end
