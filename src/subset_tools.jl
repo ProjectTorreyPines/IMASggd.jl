@@ -271,7 +271,7 @@ end
 
 """
     project_prop_on_subset!(
-        prop_arr::IMASdd.IDSvector{<:all__grid_subset_prop},
+        prop_arr, # ::IMASdd.IDSvector{<:all__grid_subset_prop}
         from_subset::all__grid_subset,
         to_subset::all__grid_subset;
         space::all__space=get_space(from_subset),
@@ -316,7 +316,7 @@ the additional utility, this function also returns a tuple
     new instance
 """
 function project_prop_on_subset!(
-    prop_arr::IMASdd.IDSvector{<:all__grid_subset_prop},
+    prop_arr, # ::IMASdd.IDSvector{<:all__grid_subset_prop}
     from_subset::all__grid_subset,
     to_subset::all__grid_subset;
     space::all__space=get_space(from_subset),
@@ -392,7 +392,7 @@ end
 
 """
     project_prop_on_subset!(
-        ggds::IMASdd.IDSvector{<:all__ggd},
+        ggds::Union{Vector{<:all__ggd}, IMASdd.IDSvector{<:all__ggd}},
         prop_path::String,
         from_subset::all__grid_subset,
         to_subset::all__grid_subset;
@@ -415,7 +415,7 @@ do the projection for all the states of the `ion`. This function call returns a 
 list of return tuples for all projections performed.
 """
 function project_prop_on_subset!(
-    ggds::IMASdd.IDSvector{<:all__ggd},
+    ggds::Union{Vector{<:all__ggd}, IMASdd.IDSvector{<:all__ggd}},
     prop_path::String,
     from_subset::all__grid_subset,
     to_subset::all__grid_subset;
@@ -426,13 +426,14 @@ function project_prop_on_subset!(
         from_subset,
     ),
 ) where {U <: Real}
-    prop_arrays = Array{IMASdd.IDSvector{<:all__grid_subset_prop}}[]
+    prop_arrays = []
     for ggd ∈ ggds
-        append!(prop_arrays, _prop_arrays_from_path(prop_path::String, ggd))
+        prop_arrays = [prop_arrays; _prop_arrays_from_path(prop_path, ggd)]
     end
+
     to_return = []
     for prop_arr ∈ prop_arrays
-        append!(
+        push!(
             to_return,
             project_prop_on_subset!(
                 prop_arr,
@@ -448,7 +449,6 @@ function project_prop_on_subset!(
 end
 
 function _prop_arrays_from_path(prop_path::String, parent)
-    prop_arrays = Array{IMASdd.IDSvector{<:all__grid_subset_prop}}[]
     if occursin(".", prop_path)
         pf = split(prop_path, ".")[1]
         rem_path = prop_path[(findfirst('.', prop_path)+1):end]
@@ -456,19 +456,22 @@ function _prop_arrays_from_path(prop_path::String, parent)
             new_parent = getfield(parent, Symbol(pf[1:(findfirst('[', pf)-1)]))
             ind_str = pf[(findfirst('[', pf)+1):(findfirst(']', pf)-1)]
             if ind_str == ":"
+                prop_arrays = []
                 for np ∈ new_parent
-                    append!(prop_arrays, _prop_arrays_from_path(rem_path, np))
+                    prop_arrays = [prop_arrays; _prop_arrays_from_path(rem_path, np)]
                 end
+                return prop_arrays
             else
                 ind = parse(Int, ind_str)
-                append!(prop_arrays, _prop_arrays_from_path(rem_path, new_parent[ind]))
+                return _prop_arrays_from_path(rem_path, new_parent[ind])
             end
         else
             new_parent = getfield(parent, Symbol(pf))
-            append!(prop_arrays, _prop_arrays_from_path(rem_path, new_parent))
+            return _prop_arrays_from_path(rem_path, new_parent)
         end
+    else
+        return [getfield(parent, Symbol(prop_path))]
     end
-    return prop_arrays
 end
 
 """

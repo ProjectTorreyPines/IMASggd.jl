@@ -201,7 +201,7 @@ if args["projection"]
                 from_subset,
                 to_subset,
             )
-        @test true
+        @test length(projection_return) == length(idstd.edge_profiles.ggd)
     end
 end
 
