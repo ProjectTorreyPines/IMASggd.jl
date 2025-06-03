@@ -8,12 +8,10 @@ Depth = 5
 
 ## Installation
 
-IMASggd is registered with public repository [FuseRegistry](https://github.com/ProjectTorreyPines/FuseRegistry.jl/). For installation:
+For installation:
 
 ```
 using Pkg
-Pkg.Registry.add(RegistrySpec(url="https://github.com/ProjectTorreyPines/FuseRegistry.jl.git"))
-Pkg.Registry.add("General")
 Pkg.add("IMASggd)
 ```
 
