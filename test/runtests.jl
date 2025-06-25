@@ -1,54 +1,103 @@
 import IMASggd:
     interp, get_kdtree, project_prop_on_subset!, get_grid_subset, get_grid_ggd,
-    get_subset_boundary, subset_do, deepcopy_subset, get_TPS_mats, get_space
-using IMASdd: IMASdd
-import Statistics: mean
+    get_subset_boundary, subset_do, deepcopy_subset, get_TPS_mats, get_space, IMASdd,
+    mean
 using Test
-using ArgParse: ArgParse
+using Printf
 
 allowed_rtol = 1e-4
 
-function parse_commandline()
-    s = ArgParse.ArgParseSettings(; description="Run tests. Default is all tests.")
+#---------------------------------------------------------------------------------------
+# Test argument settings
+#---------------------------------------------------------------------------------------
+pkg_name = "IMASggd.jl"
 
-    ArgParse.add_arg_table!(s,
-        ["--interp"],
-        Dict(:help => "Test interp",
-            :action => :store_true),
-        ["--projection"],
-        Dict(:help => "Test project_prop_on_subset!()",
-            :action => :store_true),
-        ["--in"],
-        Dict(:help => "Test ∈",
-            :action => :store_true),
-        ["--interpeqt"],
-        Dict(:help => "Test interpolation of equilibrium time slice",
-            :action => :store_true),
-        ["--subset_tools"],
-        Dict(:help => "Test subset tools",
-            :action => :store_true),
-        ["--types"],
-        Dict(:help => "Test types",
-            :action => :store_true),
-    )
-    args = ArgParse.parse_args(s)
-    if !any(values(args)) # If no flags are set, run all tests
-        for k ∈ keys(args)
-            args[k] = true
+valid_arguments = [
+    ("interp", "Test interp"),
+    ("projection", "Test project_prop_on_subset!()"),
+    ("in", "Test ∈"),
+    ("subset_tools", "Test subset tools"),
+    ("types", "Test types"),
+    ("h", "Show this help message and exit"),
+    ("help", "Show this help message and exit"),
+]
+#---------------------------------------------------------------------------------------
+
+#---------------------------------------------------------------------------------------
+# Argument parsing boilerplate code
+#---------------------------------------------------------------------------------------
+function get_options_string(
+    valid_arguments::Vector{Tuple{String, String}};
+    indent::Int=4,
+)
+    keys_arr = [k for (k, v) ∈ valid_arguments]
+    values_arr = [v for (k, v) ∈ valid_arguments]
+
+    # Determine the maximum width of each column (keys and values)
+    max_width_keys = maximum(length.(string.(keys_arr)))
+    max_width_values = maximum(length.(string.(values_arr)))
+
+    # Create the format string with indentation
+    format_str = repeat(" ", indent) * "%-$(max_width_keys)s %-$(max_width_values)s\n"
+
+    # Create a Format object
+    fmt = Printf.Format(format_str)
+
+    # Build the combined string
+    combined_string = ""
+    for (key, value) ∈ valid_arguments
+        combined_string *= Printf.format(fmt, string(key), string(value))
+    end
+
+    return combined_string
+end
+
+function check_args(
+    args::Vector{String},
+    valid_arguments::Vector{Tuple{String, String}},
+)
+    valid_keys = Set(t[1] for t ∈ valid_arguments)
+
+    any_valid = false
+    for arg ∈ args
+        if arg in valid_keys
+            any_valid = true
+        else
+            println("Error: Invalid argument found: \"", arg, "\"")
+            println()
+            return false
         end
     end
-    return args
+
+    if !any_valid && !isempty(args)
+        println("Error: No valid arguments found.")
+        return false
+    end
+    return true
 end
-args = parse_commandline()
+
+usage_string = "Usage (from inside $(pkg_name)): \njulia --project test/runtests.jl "
+usage_string *= "[" * join([k for (k, v) ∈ valid_arguments], "] [") * "]\n\n"
+usage_string *= "Run tests. Default is all tests.\n\nOptional arguments:\n"
+usage_string *= get_options_string(valid_arguments)
+
+if "h" in ARGS || "help" in ARGS || !check_args(ARGS, valid_arguments)
+    println(usage_string)
+    exit()
+end
+#---------------------------------------------------------------------------------------
+
+#---------------------------------------------------------------------------------------
+# Actual testing sets from here onwards
+#---------------------------------------------------------------------------------------
 
 print("json2imas() time: ")
 @time ids = IMASdd.json2imas(
     "$(@__DIR__)/../samples/time_dep_edge_profiles_last_step_only.json",
 )
 
-if args["interp"]
+if isempty(ARGS) || "interp" in ARGS
     @testset "interp" begin
-        # ids = h5i2imas("$(@__DIR__)/../samples/edge_profiles.h5")
         b2gmtry = "$(@__DIR__)/../samples/b2fgmtry"
         b2output = "$(@__DIR__)/../samples/b2time.nc"
         gsdesc = "$(@__DIR__)/../samples/gridspacedesc.yml"
@@ -156,8 +205,8 @@ if args["interp"]
     end
 end
 
-if args["projection"]
-    @testset "project_prop_on_subset!" begin
+if isempty(ARGS) || "projection" in ARGS
+    @testset "Test project_prop_on_subset!" begin
         prop = ids.edge_profiles.ggd[1].electrons.density
         # All cells
         from_subset = get_grid_subset(ids.edge_profiles.grid_ggd[1], -5)
@@ -205,8 +254,8 @@ if args["projection"]
     end
 end
 
-if args["subset_tools"]
-    @testset "test subset_tools" begin
+if isempty(ARGS) || "subset_tools" in ARGS
+    @testset "Test subset tools" begin
         grid_ggd = ids.edge_profiles.grid_ggd[1]
         space = grid_ggd.space[1]
 
@@ -280,8 +329,8 @@ if args["subset_tools"]
     end
 end
 
-if args["in"]
-    @testset "test ∈" begin
+if isempty(ARGS) || "in" in ARGS
+    @testset "Test ∈" begin
         grid_ggd = ids.edge_profiles.grid_ggd[1]
         space = grid_ggd.space[1]
         subset_corebnd = get_grid_subset(grid_ggd, 15)
@@ -297,8 +346,8 @@ if args["in"]
     end
 end
 
-if args["types"]
-    @testset "test types" begin
+if isempty(ARGS) || "types" in ARGS
+    @testset "Test types" begin
         grid_ggd = ids.edge_profiles.grid_ggd[1]
         resize!(ids.radiation.grid_ggd, 1)
         ids.radiation.grid_ggd[1].path = "edge_profiles/grid_ggd(1)"
