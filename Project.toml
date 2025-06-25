@@ -1,7 +1,7 @@
 name = "IMASggd"
 uuid = "b7b5e640-9b39-4803-84eb-376048795def"
 authors = ["Anchal Gupta <guptaa@fusion.gat.com>"]
-version = "3.3.1"
+version = "3.3.2"
 
 [deps]
 ColorSchemes = "35d6a980-a343-548e-a6ea-1d62b119f2f4"
