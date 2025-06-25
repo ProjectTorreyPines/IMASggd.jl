@@ -3,7 +3,6 @@ import IMASggd:
     get_subset_boundary, subset_do, deepcopy_subset, get_TPS_mats, get_space, IMASdd,
     mean
 using Test
-using Printf
 
 allowed_rtol = 1e-4
 
