@@ -1,54 +1,18 @@
 import IMASggd:
     interp, get_kdtree, project_prop_on_subset!, get_grid_subset, get_grid_ggd,
-    get_subset_boundary, subset_do, deepcopy_subset, get_TPS_mats, get_space
-using IMASdd: IMASdd
-import Statistics: mean
+    get_subset_boundary, subset_do, deepcopy_subset, get_TPS_mats, get_space, IMASdd,
+    mean
 using Test
-using ArgParse: ArgParse
 
 allowed_rtol = 1e-4
-
-function parse_commandline()
-    s = ArgParse.ArgParseSettings(; description="Run tests. Default is all tests.")
-
-    ArgParse.add_arg_table!(s,
-        ["--interp"],
-        Dict(:help => "Test interp",
-            :action => :store_true),
-        ["--projection"],
-        Dict(:help => "Test project_prop_on_subset!()",
-            :action => :store_true),
-        ["--in"],
-        Dict(:help => "Test ∈",
-            :action => :store_true),
-        ["--interpeqt"],
-        Dict(:help => "Test interpolation of equilibrium time slice",
-            :action => :store_true),
-        ["--subset_tools"],
-        Dict(:help => "Test subset tools",
-            :action => :store_true),
-        ["--types"],
-        Dict(:help => "Test types",
-            :action => :store_true),
-    )
-    args = ArgParse.parse_args(s)
-    if !any(values(args)) # If no flags are set, run all tests
-        for k ∈ keys(args)
-            args[k] = true
-        end
-    end
-    return args
-end
-args = parse_commandline()
 
 print("json2imas() time: ")
 @time ids = IMASdd.json2imas(
     "$(@__DIR__)/../samples/time_dep_edge_profiles_last_step_only.json",
 )
 
-if args["interp"]
+if isempty(ARGS) || "interp" in ARGS
     @testset "interp" begin
-        # ids = h5i2imas("$(@__DIR__)/../samples/edge_profiles.h5")
         b2gmtry = "$(@__DIR__)/../samples/b2fgmtry"
         b2output = "$(@__DIR__)/../samples/b2time.nc"
         gsdesc = "$(@__DIR__)/../samples/gridspacedesc.yml"
@@ -156,8 +120,8 @@ if args["interp"]
     end
 end
 
-if args["projection"]
-    @testset "project_prop_on_subset!" begin
+if isempty(ARGS) || "projection" in ARGS
+    @testset "Test project_prop_on_subset!" begin
         prop = ids.edge_profiles.ggd[1].electrons.density
         # All cells
         from_subset = get_grid_subset(ids.edge_profiles.grid_ggd[1], -5)
@@ -205,8 +169,8 @@ if args["projection"]
     end
 end
 
-if args["subset_tools"]
-    @testset "test subset_tools" begin
+if isempty(ARGS) || "subset_tools" in ARGS
+    @testset "Test subset tools" begin
         grid_ggd = ids.edge_profiles.grid_ggd[1]
         space = grid_ggd.space[1]
 
@@ -280,8 +244,8 @@ if args["subset_tools"]
     end
 end
 
-if args["in"]
-    @testset "test ∈" begin
+if isempty(ARGS) || "in" in ARGS
+    @testset "Test ∈" begin
         grid_ggd = ids.edge_profiles.grid_ggd[1]
         space = grid_ggd.space[1]
         subset_corebnd = get_grid_subset(grid_ggd, 15)
@@ -297,8 +261,8 @@ if args["in"]
     end
 end
 
-if args["types"]
-    @testset "test types" begin
+if isempty(ARGS) || "types" in ARGS
+    @testset "Test types" begin
         grid_ggd = ids.edge_profiles.grid_ggd[1]
         resize!(ids.radiation.grid_ggd, 1)
         ids.radiation.grid_ggd[1].path = "edge_profiles/grid_ggd(1)"
