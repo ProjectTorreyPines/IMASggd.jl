@@ -550,77 +550,8 @@ function deepcopy_subset(subset::all__grid_subset)::all__grid_subset
     return new_subset
 end
 
-"""
-    Base.:∈(
-        point::Tuple{Real, Real},
-        subset_of_space::Tuple{all__grid_subset, all__space},
-    )::Bool
-
-Overloading ∈ operator to check if a point is inside a subset of space.
-
-If the subset is 1-dimensional, all points are searched. If the subset is 2-dimensional,
-it is checked if the point is within the enclosed area. It is assumed that a
-2-dimensional subset used in such a context will form a closed area. If the subset is
-3-dimensional, its boundary is calculated on the fly. If used multiple times, it is
-recommended to calculate the boundary once and store it in a variable.
-
-Example:
-
-```julia
-if (5.5, 0.0) ∈ (subset_sol, space)
-    println("Point (5.5, 0.0) is inside the SOL subset.")
-else
-    println("Point (5.5, 0.0) is outside the SOL subset.")
-end
-```
-"""
-function Base.:∈(
-    point::Tuple{Real, Real},
-    subset_of_space::Tuple{all__grid_subset, all__space},
-)::Bool
-    r, z = point
-    subset, space = subset_of_space
-    dim = getfield(getfield(getfield(subset, :element)[1], :object)[1], :dimension)
-    opd = getfield(space, :objects_per_dimension)
-    nodes = getfield(opd[1], :object)
-    edges = getfield(opd[2], :object)
-    if dim == 3
-        subset_bnd = get_subset_boundary(space, subset)
-    elseif dim == 2
-        subset_bnd = subset
-    elseif dim == 1
-        for ele ∈ getfield(subset, :element)
-            node = nodes[getfield(getfield(ele, :object)[1], :index)]
-            if node.geometry[1] == r && node.geometry[2] == z
-                return true
-            end
-        end
-        return false
-    else
-        error("Dimension ", dim, " is not supported yet.")
-    end
-    # Count number of times an upward going ray from (r,z) intersects the boundary
-    count = 0
-    for ele ∈ getfield(subset_bnd, :element)
-        edge = edges[getfield(getfield(ele, :object)[1], :index)]
-        edge_nodes_r = zeros(2)
-        edge_nodes_z = zeros(2)
-        for (ii, node) ∈ enumerate(getfield(edge, :nodes))
-            edge_nodes_r[ii] = getfield(nodes[node], :geometry)[1]
-            edge_nodes_z[ii] = getfield(nodes[node], :geometry)[2]
-        end
-        r_max = maximum(edge_nodes_r)
-        r_min = minimum(edge_nodes_r)
-        if r_min <= r < r_max
-            z_max = maximum(edge_nodes_z)
-            if z < z_max
-                count += 1
-            end
-        end
-    end
-    # If it is even, the point is outside the boundary
-    return count % 2 == 1
-end
+# NOTE: `Base.:∈(::Tuple{Real,Real}, ::Tuple{all__grid_subset, all__space})`
+# moved to IMASdd (>= 8.6.0), where it belongs: it dispatches on IMASdd types.
 
 """
     get_prop_with_grid_subset_index(
