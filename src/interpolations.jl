@@ -324,7 +324,7 @@ TPS_mat = get_TPS_mats(dd.edge_profiles.grid_ggd[1], 5);
 
 for it ∈ eachindex(dd.edge_profiles.ggd)
     get_n_e = interp(dd.edge_profiles.ggd[it].electrons.density, TPS_mat_sep, 5)
-    println("This time step has n_e at (0, 0) = ", get_n_e(0, 0))
+    println(\"This time step has n_e at (0, 0) = \", get_n_e(0, 0))
 end
 ```
 
