@@ -654,34 +654,5 @@ all__grid_subset_prop =
         IMASdd.waves__coherent_wave___full_wave___k_perpendicular{T},
     } where {T};
 
-"""
-    Base.getproperty(ids::all__grid_ggd, field::Symbol)
-
-This function links all grid_ggd types with each other. If the grid_ggd has a path
-defined to another instance of grid_ggd, this instance would automatically return
-attributed from the referred instance.
-
-Example:
-By setting:
-
-```julia
-ids.radiation.grid_ggd[1].path = "edge_profiles/grid_ggd(1)"
-```
-
-The following will return value stored in `ids.edge_profilesgrid_ggd[1].grid_subset[36]`
-
-```julia
-ids.radiation.grid_ggd[1].grid_subset[36]
-```
-"""
-function Base.getproperty(ids::all__grid_ggd, field::Symbol)
-    if IMASdd.ismissing(ids, :path) || field == :path
-        return IMASdd.getfield(ids, field)
-    else
-        ref_ids_name = Symbol(split(ids.path, "/")[1])
-        grid_ggd_ind = parse(Int64, split(split(ids.path, "(")[2], ")")[1])
-        ref_ids = IMASdd.getfield(IMASdd.top_dd(ids), ref_ids_name)
-        grid_ggd = IMASdd.getfield(ref_ids, :grid_ggd)
-        return IMASdd.getfield(grid_ggd[grid_ggd_ind], field)
-    end
-end
+# NOTE: `Base.getproperty(::all__grid_ggd, ::Symbol)` (grid_ggd path-linking)
+# moved to IMASdd (>= 8.6.0), where it belongs: it dispatches on IMASdd types.
